@@ -1,12 +1,13 @@
 def main():
-    init_board()
-    index = get_index("d7")
+    board = init_board()
+    move_str = new_move()
+    update_board(board,move_str)
+
 
 def init_board():
     
     board = [[" " for _ in range(8)] for _ in range(8)]
     
-
     # Queen Q
     board[get_index("d8")[0]][get_index("d8")[1]] = "Q" #black
     board[get_index("d1")[0]][get_index("d1")[1]] = "Q" #white
@@ -37,9 +38,8 @@ def init_board():
     board[1] = ["p" for _ in range(len(board[1]))]
     board[6] = ["p" for _ in range(len(board[1]))]
 
-    print_board(board)        
+    # print_board(board)        
     return board
-
 
 def get_index(location: str):
 
@@ -58,10 +58,29 @@ def get_index(location: str):
             index = (r, board_spaces[r].index(location))
             return index
 
-
 def print_board(board):
     for row in board:
         print(row)
+
+def new_move():
+    print("Move from: ")
+    old_pos= input()
+    print("To: ")
+    new_pos= input()
+    return (old_pos,new_pos)
+
+def update_board(board,move_str):
+    old_pos = move_str[0]
+    old_pos_index = get_index(old_pos)
+    
+    new_pos = move_str[1]
+    new_pos_index = get_index(new_pos)
+
+    board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
+    board[old_pos_index[0]][old_pos_index[1]] = " "
+    
+    print_board(board)
+
 
 
 class Board:

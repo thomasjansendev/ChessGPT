@@ -57,7 +57,8 @@ def init_board():
     return board
 
 def get_index(pos: str):
-    #TODO (later): cache the board_space indicies into a dict
+    #TODO (later): cache indicies into a dict and call get_index during initialization 
+    #to avoid searching for index each time
     for r in range(0,len(board_spaces)):
         if pos in board_spaces[r]:
             index = (r, board_spaces[r].index(pos))
@@ -67,28 +68,28 @@ def print_board(board):
     for row in board:
         print(row)
 
-def new_move(board): #get input from user and update with selected move
+def new_move(board):
 
     #get input
-    print("Move from: ")
-    old_pos_str = input()
-    print("To: ")
-    new_pos_str = input()
+    old_pos_str = input("Move from: ")
+    new_pos_str = input("To: ")
 
     #check if input is valid
     if (get_index(old_pos_str) == None or get_index(old_pos_str) == None):
         raise Exception("Error: Invalid input. Please provide a letter between a-h combined with a number between 1-8. Example 'a6','g1' etc.")
 
+    #TODO: check whether move is legal: ask for input again if not -> see is_move_legal() function
+    is_move_legal(board,old_pos_str,new_pos_str)
 
+    #get index values of input strings
     old_pos_index = get_index(old_pos_str)
     new_pos_index = get_index(new_pos_str)
-    
-    #TODO: check whether move is legal: ask for input again if not -> see is_move_legal() function
 
+    #update board & print new state
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
     board[old_pos_index[0]][old_pos_index[1]] = " "
-    
     print_board(board)
+
     return board
 
 def is_move_legal(board,old_pos_str,new_pos_str):
@@ -96,12 +97,17 @@ def is_move_legal(board,old_pos_str,new_pos_str):
     old_pos_index = get_index(old_pos_str)
     new_pos_index = get_index(new_pos_str)
 
-    #Check for available piece
     if board[old_pos_index[0]][old_pos_index[1]] == " ":
-        print("No piece is available to move on {old_pos_str} ")
-        return False
-           
-    return True
+        raise Exception(f"No piece is available to move on {old_pos_str}")
+    elif board[old_pos_index[0]][old_pos_index[1]] == board[new_pos_index[0]][new_pos_index[1]]:
+        raise Exception("Must move piece to a different square than starting square")
+    
+    #TODO: check if move is part of legal moves for that piece type
+
+    #TODO: check if another piece is blocking the movement of that piece
+
+
+    pass
 
 
 

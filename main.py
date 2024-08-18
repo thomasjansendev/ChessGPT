@@ -76,13 +76,8 @@ def new_move(board): #get input from user and update with selected move
     new_pos_str = input()
 
     #check if input is valid
-    if ((len(old_pos_str) != 2 or len(new_pos_str) != 2)
-        or (get_index(old_pos_str) == None or get_index(old_pos_str) == None)):
+    if (get_index(old_pos_str) == None or get_index(old_pos_str) == None):
         raise Exception("Error: Invalid input. Please provide a letter between a-h combined with a number between 1-8. Example 'a6','g1' etc.")
-    
-    #TODO: check whether input is valid (part of squares str "e1" etc.) 
-    # if get_index(old_pos_str) == None or get_index(old_pos_str) == None:
-    #     raise Exception("Error: Invalid input. Please provide a letter between a-h combined with a number between 1-8. Example 'a6','g1' etc.")
 
 
     old_pos_index = get_index(old_pos_str)

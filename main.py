@@ -9,10 +9,12 @@ board_spaces = [["a8","b8","c8","d8","e8","f8","g8","h8"],
 
 def main():
     board = init_board()
+
     result = None
     while result is None:
         try:
             result = new_move(board)
+            board = result
         except Exception as e:
             print(e)
 
@@ -74,14 +76,19 @@ def new_move(board): #get input from user and update with selected move
     new_pos_str = input()
 
     #check if input is valid
-    if len(old_pos_str) != 2 or len(new_pos_str) != 2:
+    if ((len(old_pos_str) != 2 or len(new_pos_str) != 2)
+        or (get_index(old_pos_str) == None or get_index(old_pos_str) == None)):
         raise Exception("Error: Invalid input. Please provide a letter between a-h combined with a number between 1-8. Example 'a6','g1' etc.")
+    
+    #TODO: check whether input is valid (part of squares str "e1" etc.) 
+    # if get_index(old_pos_str) == None or get_index(old_pos_str) == None:
+    #     raise Exception("Error: Invalid input. Please provide a letter between a-h combined with a number between 1-8. Example 'a6','g1' etc.")
+
 
     old_pos_index = get_index(old_pos_str)
     new_pos_index = get_index(new_pos_str)
     
-    #TODO: check whether input is valid (part of squares str "e1" etc.)
-    #TODO: check whether move is legal: ask for input again if not
+    #TODO: check whether move is legal: ask for input again if not -> see is_move_legal() function
 
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
     board[old_pos_index[0]][old_pos_index[1]] = " "

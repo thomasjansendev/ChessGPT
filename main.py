@@ -1,15 +1,15 @@
-board_spaces = [["a8","b8","c8","d8","e8","f8","g8","h8"],
-                ["a7","b7","c7","d7","e7","f7","g7","h7"],
-                ["a6","b6","c6","d6","e6","f6","g6","h6"],
-                ["a5","b5","c5","d5","e5","f5","g5","h5"],
-                ["a4","b4","c4","d4","e4","f4","g4","h4"],
-                ["a3","b3","c3","d3","e3","f3","g3","h3"],
-                ["a2","b2","c2","d2","e2","f2","g2","h2"],
-                ["a1","b1","c1","d1","e1","f1","g1","h1"]]
+board_ref = [["a8","b8","c8","d8","e8","f8","g8","h8"],
+             ["a7","b7","c7","d7","e7","f7","g7","h7"],
+             ["a6","b6","c6","d6","e6","f6","g6","h6"],
+             ["a5","b5","c5","d5","e5","f5","g5","h5"],
+             ["a4","b4","c4","d4","e4","f4","g4","h4"],
+             ["a3","b3","c3","d3","e3","f3","g3","h3"],
+             ["a2","b2","c2","d2","e2","f2","g2","h2"],
+             ["a1","b1","c1","d1","e1","f1","g1","h1"]]
 
 def main():
     board = init_board()
-
+    # calc_possible_moves(board,"a1")
     result = None
     while result is None:
         try:
@@ -59,9 +59,9 @@ def init_board():
 def get_index(pos: str):
     #TODO (later): cache indicies into a dict and call get_index during initialization 
     #to avoid searching for index each time
-    for r in range(0,len(board_spaces)):
-        if pos in board_spaces[r]:
-            index = (r, board_spaces[r].index(pos))
+    for r in range(0,len(board_ref)):
+        if pos in board_ref[r]:
+            index = (r, board_ref[r].index(pos))
             return index
 
 def print_board(board):
@@ -76,16 +76,16 @@ def new_move(board):
 
     #check if input is valid
     if (get_index(old_pos_str) == None or get_index(old_pos_str) == None):
-        raise Exception("Error: Invalid input. Please provide a letter between a-h combined with a number between 1-8. Example 'a6','g1' etc.")
+        raise Exception("Invalid input. Please provide a letter between a-h combined with a number between 1-8. Example 'a6','g1' etc.")
+    elif old_pos_str == new_pos_str:
+        raise Exception("Must move piece to a different square than starting square.")
 
-    #TODO: check whether move is legal: ask for input again if not -> see is_move_legal() function
+    #check if move is legal
     is_move_legal(board,old_pos_str,new_pos_str)
 
-    #get index values of input strings
+    #update board & print new state
     old_pos_index = get_index(old_pos_str)
     new_pos_index = get_index(new_pos_str)
-
-    #update board & print new state
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
     board[old_pos_index[0]][old_pos_index[1]] = " "
     print_board(board)
@@ -94,22 +94,55 @@ def new_move(board):
 
 def is_move_legal(board,old_pos_str,new_pos_str):
     
-    old_pos_index = get_index(old_pos_str)
-    new_pos_index = get_index(new_pos_str)
-
-    if board[old_pos_index[0]][old_pos_index[1]] == " ":
-        raise Exception(f"No piece is available to move on {old_pos_str}")
-    elif board[old_pos_index[0]][old_pos_index[1]] == board[new_pos_index[0]][new_pos_index[1]]:
-        raise Exception("Must move piece to a different square than starting square")
+    if new_pos_str not in calc_possible_moves(board,old_pos_str): 
+        raise Exception("Illegal move")
     
-    #TODO: check if move is part of legal moves for that piece type
+    #TODO check if another piece is blocking the movement of that piece
 
-    #TODO: check if another piece is blocking the movement of that piece
+    return True
 
+def calc_possible_moves(board: list,position_str: str):
+    piece_rank = get_index(position_str)[0]
+    piece_file = get_index(position_str)[1]
+    piece_id = board[piece_rank][piece_file]
 
-    pass
-
-
+    if piece_id == " ": raise Exception(f"No piece is available to move on {position_str}")
+    
+    #TODO calculate legal moves for piece type
+    possible_moves = []
+    match piece_id:
+        case "Q":
+            #move diagonally, up and across
+            pass
+        case "K":
+            #move up by one
+            #move across by one
+            pass
+        case "N":
+            #jump in an L shape
+            pass
+        case "B":
+            #move diagonally
+            pass
+        case "R":
+            #move up
+            possible_moves += [rank[piece_file] for rank in board_ref]
+            #move across
+            possible_moves += board_ref[piece_rank][:]
+            pass
+        case "p":
+            #move up one
+            #move up-two if on starting position
+            #move diagonally one if it is capturing a piece
+            pass
+        case _:
+            raise Exception(f"Invalid piece_id")
+    
+    possible_moves = list(dict.fromkeys(possible_moves)) #removes duplicate values
+    possible_moves.remove(position_str) #removes current piece position
+    
+    # print(possible_moves)
+    return possible_moves
 
 class Board:
     def __init__(self):

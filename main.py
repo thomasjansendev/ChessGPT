@@ -1,4 +1,4 @@
-board_ref = [["a8","b8","c8","d8","e8","f8","g8","h8"],
+BOARD_REF = [["a8","b8","c8","d8","e8","f8","g8","h8"],
              ["a7","b7","c7","d7","e7","f7","g7","h7"],
              ["a6","b6","c6","d6","e6","f6","g6","h6"],
              ["a5","b5","c5","d5","e5","f5","g5","h5"],
@@ -9,25 +9,23 @@ board_ref = [["a8","b8","c8","d8","e8","f8","g8","h8"],
 
 def main():
     board = init_board()
-    debug_move(board, "e1","e4")
-    calc_possible_moves(board,"e4")
-
-    # idx = get_index("h7")
-    # print(idx)
-    # str = get_pos_name(idx)
-    # print(str)
     
-    # result = None
-    # while result is None:
-    #     try:
-    #         result = new_move(board)
-    #         board = result
-    #     except Exception as e:
-    #         print(e)
+    # debug_move(board, "e1","e4")
+    # calc_possible_moves(board,"e4")
+    
+    result = None
+    while result is None:
+        try:
+            result = new_move(board)
+            board = result
+        except Exception as e:
+            print(e)
 
+
+# ======= CORE FUNCTIONS =======
 
 def init_board():
-    
+    #TODO: differentiate between black and white pieces
     board = [[" " for _ in range(8)] for _ in range(8)]
     
     # Queen Q
@@ -63,21 +61,6 @@ def init_board():
     # print_board(board)        
     return board
 
-def get_index(pos_str: str):
-    #TODO (later): cache indicies into a dict and call get_index during initialization 
-    #to avoid searching for index each time
-    for r in range(0,len(board_ref)):
-        if pos_str in board_ref[r]:
-            index = (r, board_ref[r].index(pos_str))
-            return index
-
-def get_pos_name(pos_idx: tuple):
-    return board_ref[pos_idx[0]][pos_idx[1]]
-
-def print_board(board):
-    for row in board:
-        print(row)
-
 def new_move(board):
 
     #get input
@@ -91,8 +74,8 @@ def new_move(board):
         raise Exception("Must move piece to a different square than starting square.")
 
     #check if move is legal -> error is raised if not
-    if new_pos_str not in calc_possible_moves(board,old_pos_str): 
-        raise Exception(f"Illegal move. Possible moves for selected piece are {calc_possible_moves(board,old_pos_str)}")
+    # if new_pos_str not in calc_possible_moves(board,old_pos_str): 
+    #     raise Exception(f"Illegal move. Possible moves for selected piece are {calc_possible_moves(board,old_pos_str)}")
 
     #update board & print new state
     old_pos_index = get_index(old_pos_str)
@@ -121,13 +104,13 @@ def calc_possible_moves(board: list,position_str: str):
             pass
 
 
-        case "K": # can move to any adjacent square by 1 => 8 DOF - 1
+        case "K": # can move to any adjacent square by 1 => 8 DOF - 1 || cannot move to a space threatened by an opponent piece
             king_moveset = [(-1,0),(-1,+1),(0,+1),(+1,+1),(+1,0),(+1,-1),(0,-1),(-1,-1)]
             for move in king_moveset:
                 new_move = (piece_idx[0]+move[0],piece_idx[1]+move[1]) #add moveset to the piece's current position
                 if 0 <= new_move[0] <= 7 and 0 <= new_move[1] <= 7: #only accept positions that are within board boundaries
                     possible_moves_str.append(get_pos_name(new_move))
-
+            #TODO remove spaces that are threatened by an enemy piece <= need a way to determine that
 
         case "N": # can jump in L shape => 8 DOF - N/A
             knight_moveset = [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
@@ -141,8 +124,8 @@ def calc_possible_moves(board: list,position_str: str):
 
 
         case "R": # can move horizontally and vertically => 4 DOF - :
-            possible_moves_str += [rank[piece_file] for rank in board_ref] # vertical movement
-            possible_moves_str += board_ref[piece_rank][:] # horizontal movement
+            possible_moves_str += [rank[piece_file] for rank in BOARD_REF] # vertical movement
+            possible_moves_str += BOARD_REF[piece_rank][:] # horizontal movement
             possible_moves_str = list(dict.fromkeys(possible_moves_str)) # removes duplicate values
             possible_moves_str.remove(position_str) # removes current piece position
             pass
@@ -162,7 +145,25 @@ def calc_possible_moves(board: list,position_str: str):
     print(possible_moves_str)
     return possible_moves_str
 
-def debug_move(board,old_pos_str,new_pos_str):
+
+# ======= UTILITY FUNCTIONS =======
+
+def get_index(pos_str: str):
+    #TODO (later): cache indicies into a dict and call get_index during initialization 
+    #to avoid searching for index each time
+    for r in range(0,len(BOARD_REF)):
+        if pos_str in BOARD_REF[r]:
+            index = (r, BOARD_REF[r].index(pos_str))
+            return index
+
+def get_pos_name(pos_idx: tuple):
+    return BOARD_REF[pos_idx[0]][pos_idx[1]]
+
+def print_board(board):
+    for row in board:
+        print(row)
+
+def debug_move(board,old_pos_str,new_pos_str): #used for testing
     old_pos_index = get_index(old_pos_str)
     new_pos_index = get_index(new_pos_str)
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]

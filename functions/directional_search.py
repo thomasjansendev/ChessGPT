@@ -1,4 +1,5 @@
 #Directional array search implementation
+from main import BOARD_REF
 
 ARRAY_CARDINALS = { "N":  (-1,0),
                     "NE": (-1,1),

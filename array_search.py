@@ -18,20 +18,29 @@ ARRAY_CARDINALS = { "N":  (-1,0),
                     "O":  (0,-1),
                     "NO": (-1,-1) }
 
+board_example = [['R_b', 'N_b', 'B_b', 'Q_b', 'K_b', 'B_b', 'N_b', 'R_b'],
+                 ['p_b', 'p_b', 'p_b', 'p_b', 'p_b', 'p_b', 'p_b', 'p_b'],
+                 ['___', '___', '___', '___', '___', '___', '___', '___'],
+                 ['___', '___', '___', '___', '___', '___', '___', '___'],
+                 ['___', '___', '___', '___', '___', '___', '___', '___'],
+                 ['___', '___', '___', '___', '___', '___', '___', '___'],
+                 ['p_w', 'p_w', 'p_w', 'p_w', 'p_w', 'p_w', 'p_w', 'p_w'],
+                 ['R_w', 'N_w', 'B_w', 'Q_w', 'K_w', 'B_w', 'N_w', 'R_w']]
+
 def main():
     origin = input("Origin: ")
     origin_idx = get_index(origin)
     depth = None
-    r_n = search(BOARD_REF,origin_idx,"N",depth)
-    r_e = search(BOARD_REF,origin_idx,"E",depth)
-    r_s = search(BOARD_REF,origin_idx,"S",depth)
-    r_o = search(BOARD_REF,origin_idx,"O",depth)
-    r_ne = search(BOARD_REF,origin_idx,"NE",depth)
-    r_se = search(BOARD_REF,origin_idx,"SE",depth)
-    r_so = search(BOARD_REF,origin_idx,"SO",depth)
-    r_no = search(BOARD_REF,origin_idx,"NO",depth)
+    r_n = search(board_example,origin_idx,"N",depth)
+    r_e = search(board_example,origin_idx,"E",depth)
+    r_s = search(board_example,origin_idx,"S",depth)
+    r_o = search(board_example,origin_idx,"O",depth)
+    r_ne = search(board_example,origin_idx,"NE",depth)
+    r_se = search(board_example,origin_idx,"SE",depth)
+    r_so = search(board_example,origin_idx,"SO",depth)
+    r_no = search(board_example,origin_idx,"NO",depth)
         
-    print("=== VERT/HORI ===")
+    print("=== VERT/HORIZ ===")
     print(f"North: {r_n}")
     print(f"Est: {r_e}")
     print(f"South: {r_s}")
@@ -47,24 +56,31 @@ def main():
 
 
 def search(array: list, origin: tuple, direction: str, depth = None):
-    #TODO: interupt if intercept a piece 
-    #TODO: Optimize full search: need calculate shortest length needed instead of searching the whole length of array 
-    
-    if depth == None: depth = max(len(array),len(array[0])) #to manage none square matrices
-    elif depth < 0: depth = 0
-    elif depth < len(array): depth += 1
-    elif depth >= len(array): depth = len(array)
+    #TODO: Optimize full search: figure out shortest length needed instead of searching the whole length of array
+    #TODO: allow input of multiple directions
+    #TODO: snip the last element of possible moves if it is a piece of the same colour
+    #TODO: integrate search with possible moves
 
-    result = []
-    for i in range(1,depth): #works for square or rectangular arrays
+    #make sure depth is well defined
+    if depth == None: depth = len(array) #default to searching whole array
+    elif depth < 0: depth = 0
+    elif depth < len(array): depth += 1 #+1 because range() excludes the upper bound
+    elif depth >= len(array): depth = len(array) #caping the value of depth
+
+    #search loop
+    results = []
+    for i in range(1,depth): #only works for square arrays
         
-        p = (origin[0]+ARRAY_CARDINALS[direction][0]*i,
-             origin[1]+ARRAY_CARDINALS[direction][1]*i ) 
+        p = ( origin[0] + ARRAY_CARDINALS[direction][0] * i,
+              origin[1] + ARRAY_CARDINALS[direction][1] * i ) 
         
-        if 0 <= p[0] < len(array) and 0 <= p[1] < len(array):
-            result.append(BOARD_REF[p[0]][p[1]])
+        if 0 <= p[0] < len(array) and 0 <= p[1] < len(array): #check if within boundaries of board
+            r = BOARD_REF[p[0]][p[1]] #'= p' to return indices #'= array[p[0]][p[1]]' to return board contents
+            results.append(r)
+            if array[p[0]][p[1]] != '___': #true: piece is hit
+                return results
     
-    return result    
+    return results
     
 def get_index(pos_str: str):
     for r in range(0,len(BOARD_REF)):
@@ -74,4 +90,10 @@ def get_index(pos_str: str):
     
 main()
 
-
+# for i in range(1,depth): #works for square or rectangular arrays
+    
+#     p = (origin[0]+ARRAY_CARDINALS[direction][0]*i,
+#             origin[1]+ARRAY_CARDINALS[direction][1]*i ) 
+    
+#     if 0 <= p[0] < len(array) and 0 <= p[1] < len(array):
+#         result.append(BOARD_REF[p[0]][p[1]])

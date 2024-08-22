@@ -1,6 +1,6 @@
-from constants import *
-from core import *
-from utilities import *
+from src.constants import *
+from src.core import *
+from src.utilities import *
 
 def main():
     board = init_board()

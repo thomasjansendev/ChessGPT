@@ -1,5 +1,5 @@
-from src.utilities import *
 from src.constants import *
+from src.utilities import *
 
 # ======= CORE FUNCTIONS =======
 
@@ -16,8 +16,9 @@ def new_move(board):
         raise Exception("Must move piece to a different square than starting square.")
 
     #check if move is legal -> error is raised if not
-    # if new_pos_str not in calc_possible_moves(board,old_pos_str): 
-    #     raise Exception(f"Illegal move. Possible moves for selected piece are {calc_possible_moves(board,old_pos_str)}")
+    possible_moves = calc_possible_moves(board,old_pos_str)
+    if new_pos_str not in possible_moves: 
+        raise Exception(f"Illegal move. Possible moves for selected piece are {possible_moves}")
 
     #update board & print new state
     old_pos_index = get_index(old_pos_str)
@@ -69,15 +70,20 @@ def calc_possible_moves(board: list,position_str: str):
             moves_dict = search(board,piece_index,["N","E","S","O"])
             for key in moves_dict:
                 possible_moves_str += moves_dict[key]
-            pass
 
 
         case "p": # 1.5 DOF - 2->1
-            #move up one
-            #move up-two if on starting position
+            if '2' in position_str or '7' in position_str: 
+                depth = 2 #move up-two if on starting position
+            else:  
+                depth = 1 #move up one
+                
+            moves_dict = search(board,piece_index,["N"],depth)
+            for key in moves_dict:
+                possible_moves_str += moves_dict[key]
+            
             #move diagonally one if it is capturing a piece
-            pass
-
+            #en-passant
 
         case _:
             raise Exception(f"Invalid piece_id")
@@ -113,7 +119,7 @@ def search(array: list, origin: tuple, directions: list, depth: int = None):
                 if direction in results: results[direction].append(r)
                 else: results[direction] = [r]
                 
-                if array[p[0]][p[1]] != '___': #true: piece is hit
+                if array[p[0]][p[1]] != ' ': #true: piece is hit
                     break
     
     return results

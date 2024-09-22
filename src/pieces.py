@@ -21,22 +21,24 @@ class Piece:
         return possible_moves
     
     
-class Queen(Piece):
+class Queen(Piece): # can move in any direction => 8 DOF
     def __init__(self, color: str) -> None:
         super().__init__(color)
         self.id = "Q"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         
         
-class King(Piece):
+class King(Piece): # can move to any adjacent square by 1 => 8 DOF
     def __init__(self, color: str) -> None:
         super().__init__(color)
         self.id = "K"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         self.movedepth = 1
         
+    #TODO in possible moves don't include spaces that are threatened by an enemy piece <= need a way to determine that
         
-class Knight(Piece):
+        
+class Knight(Piece): # can jump in L shape => 8 DOF
     def __init__(self, color: str) -> None:
         super().__init__(color)
         self.id = "N"
@@ -52,21 +54,21 @@ class Knight(Piece):
         return possible_moves
 
 
-class Bishop(Piece):
+class Bishop(Piece): # can move diagonally => 4 DOF
     def __init__(self, color: str) -> None:
         super().__init__(color)
         self.id = "B"
         self.moveset = ["NE","SE","SO","NO"]
 
 
-class Rook(Piece):
+class Rook(Piece): # can move horizontally and vertically => 4 DOF
     def __init__(self, color: str) -> None:
         super().__init__(color)
         self.id = "R"
         self.moveset = ["N","E","S","O"]
 
 
-class Pawn(Piece):
+class Pawn(Piece): # 1.5 DOF
     def __init__(self, color: str) -> None:
         super().__init__(color)
         self.id = "p"
@@ -84,7 +86,7 @@ class Pawn(Piece):
         else:  
             depth = 1 #move up one
         
-        moves_dict = cardinal_array_search(board,position,self.moveset,depth)
+        moves_dict = cardinal_array_search(board,position,self.moveset[0],depth)
         for key in moves_dict:
             possible_moves += moves_dict[key]
         

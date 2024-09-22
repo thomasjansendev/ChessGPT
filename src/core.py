@@ -1,5 +1,6 @@
 from src.constants import *
 from src.utilities import *
+from src.pieces import *
 
 # ======= CORE FUNCTIONS =======
 
@@ -95,7 +96,6 @@ def calc_possible_moves(board: list,position_str: str):
 def search(array: list, origin: tuple, directions: list, depth: int = None):
     #TODO: snip the last element of possible moves if it is a piece of the same colour
     #TODO: Optimize full search: figure out shortest length needed instead of searching the whole length of array
-    #TODO: integrate search with possible moves -> main()
 
     #check depth is well defined
     if depth == None: depth = len(array) #default to searching whole array
@@ -124,39 +124,39 @@ def search(array: list, origin: tuple, directions: list, depth: int = None):
     
     return results
 
-def init_board():
+def init_board() -> list:
     #TODO: differentiate between black and white pieces
-    board = [[" " for _ in range(8)] for _ in range(8)]
+    board = [[None for _ in range(8)] for _ in range(8)]
     
     # Queen Q
-    board[get_index("d8")[0]][get_index("d8")[1]] = "Q" #black
-    board[get_index("d1")[0]][get_index("d1")[1]] = "Q" #white
+    board[get_index("d8")[0]][get_index("d8")[1]] = Queen("black")
+    board[get_index("d1")[0]][get_index("d1")[1]] = Queen("white")
 
     # King K
-    board[get_index("e8")[0]][get_index("e8")[1]] = "K" #black
-    board[get_index("e1")[0]][get_index("e1")[1]] = "K" #white
+    board[get_index("e8")[0]][get_index("e8")[1]] = King("black")
+    board[get_index("e1")[0]][get_index("e1")[1]] = King("white")
 
     # Knights N
-    board[get_index("b8")[0]][get_index("b8")[1]] = "N" #black
-    board[get_index("g8")[0]][get_index("g8")[1]] = "N" #black
-    board[get_index("b1")[0]][get_index("b1")[1]] = "N" #white
-    board[get_index("g1")[0]][get_index("g1")[1]] = "N" #white
+    board[get_index("b8")[0]][get_index("b8")[1]] = Knight("black")
+    board[get_index("g8")[0]][get_index("g8")[1]] = Knight("black")
+    board[get_index("b1")[0]][get_index("b1")[1]] = Knight("white")
+    board[get_index("g1")[0]][get_index("g1")[1]] = Knight("white")
 
     # Bishop B
-    board[get_index("c8")[0]][get_index("c8")[1]] = "B" #black
-    board[get_index("f8")[0]][get_index("f8")[1]] = "B" #black
-    board[get_index("c1")[0]][get_index("c1")[1]] = "B" #white
-    board[get_index("f1")[0]][get_index("f1")[1]] = "B" #white
+    board[get_index("c8")[0]][get_index("c8")[1]] = Bishop("black")
+    board[get_index("f8")[0]][get_index("f8")[1]] = Bishop("black")
+    board[get_index("c1")[0]][get_index("c1")[1]] = Bishop("white")
+    board[get_index("f1")[0]][get_index("f1")[1]] = Bishop("white")
 
     # Rook R
-    board[get_index("a8")[0]][get_index("a8")[1]] = "R" #black
-    board[get_index("h8")[0]][get_index("h8")[1]] = "R" #black
-    board[get_index("a1")[0]][get_index("a1")[1]] = "R" #white
-    board[get_index("h1")[0]][get_index("h1")[1]] = "R" #white
+    board[get_index("a8")[0]][get_index("a8")[1]] = Rook("black")
+    board[get_index("h8")[0]][get_index("h8")[1]] = Rook("black")
+    board[get_index("a1")[0]][get_index("a1")[1]] = Rook("white")
+    board[get_index("h1")[0]][get_index("h1")[1]] = Rook("white")
 
     # Pawns p
-    board[1] = ["p" for _ in range(len(board[1]))]
-    board[6] = ["p" for _ in range(len(board[1]))]
+    board[1] = [Pawn("black") for _ in range(len(board[1]))]
+    board[6] = [Pawn("white") for _ in range(len(board[1]))]
 
     # print_board(board)        
     return board

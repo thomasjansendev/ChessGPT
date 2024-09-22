@@ -3,15 +3,15 @@ from src.pieces import *
 
 # ======= UTILITY FUNCTIONS =======
 
-def get_index(pos_str: str):
-    #TODO (later): cache indicies into a dict and call get_index during initialization 
+def name_to_idx(pos_str: str) -> tuple:
+    #TODO (later): cache indicies into a dict during initialization 
     #to avoid searching for index each time
     for i in range(0,len(BOARD_REF)):
         if pos_str in BOARD_REF[i]:
             index = (i, BOARD_REF[i].index(pos_str))
             return index
 
-def get_pos_name(pos_idx: tuple):
+def idx_to_name(pos_idx: tuple) -> str: #converts an array index location to a chess board location (e.g. (0,0) -> "a8")
     return BOARD_REF[pos_idx[0]][pos_idx[1]]
 
 def print_board(board,mode="--clean"):
@@ -31,7 +31,7 @@ def mark_moves_on_board(board,moves:tuple):
     return new_board
 
 def debug_move(board,old_pos_str,new_pos_str): #used for testing to move a piece freely without checking if it is a valid move
-    old_pos_index = get_index(old_pos_str)
-    new_pos_index = get_index(new_pos_str)
+    old_pos_index = name_to_idx(old_pos_str)
+    new_pos_index = name_to_idx(new_pos_str)
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
     board[old_pos_index[0]][old_pos_index[1]] = " "

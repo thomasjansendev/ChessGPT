@@ -17,7 +17,7 @@ def print_board(board):
     for row in board:
         print(row)
 
-def debug_move(board,old_pos_str,new_pos_str): #used for testing
+def debug_move(board,old_pos_str,new_pos_str): #used for testing to move a piece freely without checking if it is a valid move
     old_pos_index = get_index(old_pos_str)
     new_pos_index = get_index(new_pos_str)
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]

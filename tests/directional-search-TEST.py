@@ -1,6 +1,6 @@
 #script to TEST the directional array search
 from constants import *
-from core import search
+from core import cardinal_array_search
 
 def test():
     origin = input("Origin of search (e.g. a1, e4 etc.): ")
@@ -8,7 +8,7 @@ def test():
     origin_idx = get_index(origin)
     depth = None
     search_directions = ["N","E","S","O","NE","SE","SO","NO"]
-    results = search(BOARD_INIT_W,origin_idx,search_directions,depth)
+    results = cardinal_array_search(BOARD_INIT_W,origin_idx,search_directions,depth)
 
     for result in results:
         print(f"{result}: {results[result]}")

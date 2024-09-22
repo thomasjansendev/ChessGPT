@@ -15,7 +15,8 @@ def get_pos_name(pos_idx: tuple):
 
 def print_board(board):
     for row in board:
-        print(row)
+        row_to_print = list(map(lambda x: x.id if x != None else ' ', row))
+        print(row_to_print)
 
 def debug_move(board,old_pos_str,new_pos_str): #used for testing to move a piece freely without checking if it is a valid move
     old_pos_index = get_index(old_pos_str)

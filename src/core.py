@@ -3,18 +3,23 @@ from src.utilities import *
 
 # ======= CORE FUNCTIONS =======
 
-def new_move(board,white_turn):
+def new_move(board,current_player):
 
     #get input
     old_pos_str = input("from: ").strip()
     old_pos_index = name_to_idx(old_pos_str)
     
-    #check if piece is available
     piece = board[old_pos_index[0]][old_pos_index[1]]
-    if piece == None:
-        raise Exception("No piece available to move at this location.")
     possible_moves = piece.calc_possible_moves(board)
     possible_moves = list(map(lambda x: idx_to_name(x),possible_moves))
+    
+    #check if valid piece
+    if piece == None:
+        raise Exception("No piece available to move at this location.")
+    if piece.color != current_player:
+        raise Exception("Please chose a piece of your own color")
+    
+    #debug info
     print(f"Selected: {piece}")
     print(f"Possible moves: {possible_moves}")
     

@@ -3,7 +3,7 @@ from src.pieces import *
 
 # ======= UTILITY FUNCTIONS =======
 
-def name_to_idx(pos_str: str) -> tuple:
+def name_to_idx(pos_str: str) -> tuple: #converts a chess board location into an an array index location (e.g. "a8" -> (0,0))
     #TODO (later): cache indicies into a dict during initialization 
     #to avoid searching for index each time
     for i in range(0,len(BOARD_REF)):

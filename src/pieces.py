@@ -1,7 +1,10 @@
+from enum import Enum
 from src.constants import ARRAY_CARDINALS
 
+Color = Enum('Color', ['WHITE', 'BLACK'])
+
 class Piece:
-    def __init__(self, color: str) -> None:
+    def __init__(self, color: Color) -> None:
         self.color = color
         self.id = None
         self.moveset = None

@@ -5,7 +5,7 @@ from src.pieces import *
 def main():
     board = init_board()
     # board = init_empty_board()
-    # piece = Queen("white")
+    # piece = Queen(Color.WHITE)
     # pos = (2,2)
     # board[pos[0]][pos[1]] = piece
     
@@ -16,13 +16,22 @@ def main():
     # print(f"Position: {piece_pos}")
     # print(f"Possible moves: {piece_moves}")
     
-    result = None
-    while result is None:
-        try:
-            result = new_move(board)
-            board = result
-        except Exception as e:
-            print(e)
+    running = True
+    current_player = Color.WHITE
+    while running:
+        print(f"{current_player} to move: ")
+        result = None
+        while result is None:
+            try:
+                result = new_move(board,current_player)
+                board = result
+                print_board(board)
+            except Exception as e:
+                print(e)
+        
+        if current_player == Color.WHITE: current_player = Color.BLACK
+        elif current_player == Color.BLACK: current_player = Color.WHITE
+        
     
     # print_board(board,mode="--clean")
 

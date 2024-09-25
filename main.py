@@ -19,7 +19,7 @@ def main():
     running = True
     current_player = Color.WHITE
     while running:
-        print(f"{current_player} to move: ")
+        print(f"{current_player.name} to move: ")
         result = None
         while result is None:
             try:

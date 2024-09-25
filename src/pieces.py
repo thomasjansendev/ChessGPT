@@ -25,14 +25,14 @@ class Piece:
     
     
 class Queen(Piece): # can move in any direction => 8 DOF
-    def __init__(self, color: str) -> None:
+    def __init__(self, color: Color) -> None:
         super().__init__(color)
         self.id = "Q"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         
         
 class King(Piece): # can move to any adjacent square by 1 => 8 DOF
-    def __init__(self, color: str) -> None:
+    def __init__(self, color: Color) -> None:
         super().__init__(color)
         self.id = "K"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
@@ -42,7 +42,7 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         
         
 class Knight(Piece): # can jump in L shape => 8 DOF
-    def __init__(self, color: str) -> None:
+    def __init__(self, color: Color) -> None:
         super().__init__(color)
         self.id = "N"
         self.moveset = [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
@@ -58,38 +58,45 @@ class Knight(Piece): # can jump in L shape => 8 DOF
 
 
 class Bishop(Piece): # can move diagonally => 4 DOF
-    def __init__(self, color: str) -> None:
+    def __init__(self, color: Color) -> None:
         super().__init__(color)
         self.id = "B"
         self.moveset = ["NE","SE","SO","NO"]
 
 
 class Rook(Piece): # can move horizontally and vertically => 4 DOF
-    def __init__(self, color: str) -> None:
+    def __init__(self, color: Color) -> None:
         super().__init__(color)
         self.id = "R"
         self.moveset = ["N","E","S","O"]
 
 
 class Pawn(Piece): # 1.5 DOF
-    def __init__(self, color: str) -> None:
+    def __init__(self, color: Color) -> None:
         super().__init__(color)
         self.id = "p"
-        self.moveset = ["N","NE","NO"]
+        if color == Color.WHITE:
+            self.moveset = ["N","NE","NO"]
+            self.starting_rank = 6
+        elif color == Color.BLACK:
+            self.moveset = ["S","SE","SO"]
+            self.starting_rank = 1
+        else:
+            raise Exception("Color value should be WHITE or BLACK")
         
-    #TODO: move diagonally one if it is capturing a piece
-    #TODO: en-passant
     def calc_possible_moves(self,board) -> list:
+        #TODO: move diagonally one if it is capturing a piece
+        #TODO: en-passant
         possible_moves = []
         position = self.get_position(board)
         
         #TODO: fix later once playing as black is possible (starting row for black is 1)
-        if position[0] == 6: 
-            depth = 2 #can move up-two if on starting position
+        if position[0] == self.starting_rank: 
+            move_depth = 2 #can move up-two if on starting position
         else:  
-            depth = 1 #move up one
+            move_depth = 1 #move up one
         
-        moves_dict = cardinal_array_search(board,position,self.moveset[0],depth)
+        moves_dict = cardinal_array_search(board,position,self.moveset[0],move_depth)
         for key in moves_dict:
             possible_moves += moves_dict[key]
         

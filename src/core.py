@@ -13,7 +13,7 @@ def new_move(board,current_player):
     possible_moves = piece.calc_possible_moves(board)
     possible_moves = list(map(lambda x: idx_to_name(x),possible_moves))
     
-    #check if valid piece
+    #check if valid piece for current player
     if piece == None:
         raise Exception("No piece available to move at this location.")
     if piece.color != current_player:

@@ -2,7 +2,8 @@ import pygame
 from src.constants import *
 from src.core import *
 from src.pieces import *
-from src.ui import *
+from src.sprites import *
+from src.board import *
 
 def main():
     #Pygame Initialization
@@ -23,13 +24,24 @@ def main():
                 running = False
                 
         screen.fill("black")
-        pygame.display.flip()
         
+        #TODO: make this a onetime operation instead of drawing each cell individually each frame
+        is_light = False
+        for row in range(rows):
+            is_light = not is_light
+            for col in range(cols):
+                x = col * CELL_WIDTH
+                y = row * CELL_HEIGHT
+                if is_light: screen.blit(square_light_image, (x, y))
+                else: screen.blit(square_dark_image, (x, y))
+                is_light = not is_light
+
+        pygame.display.flip()
         dt = clock.tick(60) / 1000
     
         
 
-def handle_move() -> None:
+def handle_move() -> None: #temporarily putting code here
     print(f"{current_player.name} to move: ")
     result = None
     while result is None:

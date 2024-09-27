@@ -1,8 +1,5 @@
 import os
 
-SCREEN_WIDTH = 768
-SCREEN_HEIGHT = 768
-
 def load_sprites() -> dict:
     #Initialize dictionary to store filepaths to sprites
     sprites_dict = {
@@ -22,14 +19,14 @@ def load_sprites() -> dict:
         "b_rook": "",
     }
     
-    #TODO: Ensure the current directory is the project's working directory
+    #TODO: Ensure the current directory is the project's working directory -> possibly in main ?
     project_dir = os.getcwd()
     print(f"Current working directory: {project_dir}")
     
     #Get the directory containing the sprites and the filenames
     sprites_dir = os.path.join('.','sprites','png')
     try:
-        dirpath, dirnames, sprites_filenames = next(os.walk(sprites_dir))
+        _, _, sprites_filenames = next(os.walk(sprites_dir))
     except StopIteration:
         print(f"Initialization: Directory {sprites_dir} not found or empty.")
         return sprites_dict
@@ -39,6 +36,8 @@ def load_sprites() -> dict:
         for filename in sprites_filenames:
             if key in filename:
                 sprites_dict[key] = os.path.join(sprites_dir,filename)
-                print(f"{key}: {sprites_dict[key]}")
+                # print(f"{key}: {sprites_dict[key]}")
     
     return sprites_dict
+
+SPRITES_DICT = load_sprites()

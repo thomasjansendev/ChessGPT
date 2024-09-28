@@ -3,13 +3,7 @@ from src.sprites import SPRITES_DICT
 from src.utilities import *
 from src.constants import *
 
-square_dark_image = pygame.image.load(SPRITES_DICT["square_dark"])
-square_dark_image = pygame.transform.scale(square_dark_image, (SPRITE_WIDTH, SPRITE_HEIGHT))
-
-square_light_image = pygame.image.load(SPRITES_DICT["square_light"])
-square_light_image = pygame.transform.scale(square_light_image, (SPRITE_WIDTH, SPRITE_HEIGHT))
-
-def init_board():
+def init_board() -> list:
     board = [[None for _ in range(8)] for _ in range(8)]
     # Queen Q
     board[name_to_idx("d8")[0]][name_to_idx("d8")[1]] = Queen(Color.BLACK)

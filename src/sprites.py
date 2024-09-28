@@ -1,6 +1,8 @@
 import os
+import pygame
+from src.constants import *
 
-def load_sprites() -> dict:
+def load_sprites() -> dict: #returns a dictionary of filepaths
     #Initialize dictionary to store filepaths to sprites
     sprites_dict = {
         "square_dark": "",
@@ -23,7 +25,7 @@ def load_sprites() -> dict:
     project_dir = os.getcwd()
     print(f"Current working directory: {project_dir}")
     
-    #Get the directory containing the sprites and the filenames
+    #Set the directory path containing the sprites and get the filenames of all files in that dir
     sprites_dir = os.path.join('.','sprites','png')
     try:
         _, _, sprites_filenames = next(os.walk(sprites_dir))
@@ -31,12 +33,16 @@ def load_sprites() -> dict:
         print(f"Initialization: Directory {sprites_dir} not found or empty.")
         return sprites_dict
 
-    #Assign filepath to each sprite in the sprite dictionary for future reference
+    #Use filepaths to load sprites as pygame images for corresponding sprite in the sprites dictionary
     for key in sprites_dict:
         for filename in sprites_filenames:
             if key in filename:
-                sprites_dict[key] = os.path.join(sprites_dir,filename)
+                sprite_filepath = os.path.join(sprites_dir,filename)
+                sprite_image = pygame.image.load(sprite_filepath)
+                sprite_image = pygame.transform.scale(sprite_image,(SPRITE_WIDTH,SPRITE_HEIGHT))
+                sprites_dict[key] = sprite_image
                 # print(f"{key}: {sprites_dict[key]}")
+                break
     
     return sprites_dict
 

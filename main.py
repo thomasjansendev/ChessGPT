@@ -32,9 +32,11 @@ def main():
             for col in range(COLS):
                 x = col * CELL_WIDTH
                 y = row * CELL_HEIGHT
-                if is_light: screen.blit(square_light_image, (x, y))
-                else: screen.blit(square_dark_image, (x, y))
+                if is_light: screen.blit(SPRITES_DICT["square_dark"], (x, y))
+                else: screen.blit(SPRITES_DICT["square_light"], (x, y))
                 is_light = not is_light
+                                
+        
 
         pygame.display.flip()
         dt = clock.tick(60) / 1000

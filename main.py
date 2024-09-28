@@ -1,6 +1,6 @@
 import pygame
 from src.constants import *
-from src.core import *
+from src.move import *
 from src.pieces import *
 from src.sprites import *
 from src.board import *
@@ -25,11 +25,11 @@ def main():
                 
         screen.fill("black")
         
-        #TODO: make this a onetime operation instead of drawing each cell individually each frame
+        #TODO: make this a onetime operation instead of drawing each cell individually each frame -> input to screen.fill ?
         is_light = False
-        for row in range(rows):
+        for row in range(ROWS):
             is_light = not is_light
-            for col in range(cols):
+            for col in range(COLS):
                 x = col * CELL_WIDTH
                 y = row * CELL_HEIGHT
                 if is_light: screen.blit(square_light_image, (x, y))

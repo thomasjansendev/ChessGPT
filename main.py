@@ -17,11 +17,32 @@ def main():
     board = init_board()
     current_player = Color.WHITE
     
+    #temporary variable to help with dev
+    center_x, center_y = SCREEN_WIDTH/2, SCREEN_HEIGHT/2               
+    piece = Queen(Color.WHITE)
+    piece_img = piece.sprite
+    piece_img_rect = piece_img.get_rect(topleft=(center_x, center_y))
+    dragging = False
+    
     while running:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 running = False
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print(event.pos)
+                if piece_img_rect.collidepoint(event.pos):
+                    dragging = True
+                    piece_img_rect.center = (event.pos[0],event.pos[1])
+                    print(event.pos)
+            elif event.type == pygame.MOUSEMOTION:
+                if dragging:
+                    print(event.pos)
+                    piece_img_rect.center = (event.pos[0],event.pos[1])
+                    
+            elif event.type == pygame.MOUSEBUTTONUP:
+                dragging = False
                 
         screen.fill("black")
         
@@ -35,8 +56,8 @@ def main():
                 if is_light: screen.blit(SPRITES_DICT["square_dark"], (x, y))
                 else: screen.blit(SPRITES_DICT["square_light"], (x, y))
                 is_light = not is_light
-                                
         
+        screen.blit(piece_img, piece_img_rect)
 
         pygame.display.flip()
         dt = clock.tick(60) / 1000

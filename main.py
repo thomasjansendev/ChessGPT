@@ -6,6 +6,8 @@ from src.sprites import *
 from src.board import *
 
 def main():
+    
+    
     #Pygame Initialization
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -14,7 +16,8 @@ def main():
     dt = 0
     
     #Chess Initialization
-    board = init_board()
+    #board = init_board_array()
+    board = set_pieces(init_board_dict())
     current_player = Color.WHITE
     
     #temporary variable to help with dev
@@ -31,32 +34,30 @@ def main():
                 running = False
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                print(event.pos)
                 if piece_img_rect.collidepoint(event.pos):
                     dragging = True
                     piece_img_rect.center = (event.pos[0],event.pos[1])
-                    print(event.pos)
             elif event.type == pygame.MOUSEMOTION:
                 if dragging:
-                    print(event.pos)
                     piece_img_rect.center = (event.pos[0],event.pos[1])
                     
             elif event.type == pygame.MOUSEBUTTONUP:
                 dragging = False
+                for square in board:
+                    square_rect = board[square]["rect"]
+                    if square_rect.collidepoint(event.pos):
+                        piece_img_rect.topleft = (square_rect.x,square_rect.y)
+                
                 
         screen.fill("black")
         
         #TODO: make this a onetime operation instead of drawing each cell individually each frame -> input to screen.fill ?
-        is_light = False
-        for row in range(ROWS):
-            is_light = not is_light
-            for col in range(COLS):
-                x = col * CELL_WIDTH
-                y = row * CELL_HEIGHT
-                if is_light: screen.blit(SPRITES_DICT["square_dark"], (x, y))
-                else: screen.blit(SPRITES_DICT["square_light"], (x, y))
-                is_light = not is_light
+        for key in board:
+            img = board[key]['img']
+            rect = board[key]['rect']
+            screen.blit(img,rect)
         
+        screen.blit(square_img,square_img_rect)
         screen.blit(piece_img, piece_img_rect)
 
         pygame.display.flip()

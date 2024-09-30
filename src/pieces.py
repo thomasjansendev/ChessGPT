@@ -38,7 +38,7 @@ class Queen(Piece): # can move in any direction => 8 DOF
         
         
 class King(Piece): # can move to any adjacent square by 1 => 8 DOF
-    def __init__(self, color: Color) -> None:
+    def __init__(self, color: Color, rect) -> None:
         super().__init__(color)
         self.id = "K"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
@@ -47,12 +47,13 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
             self.img = SPRITES_DICT["w_king"]
         elif color == Color.BLACK:
             self.img = SPRITES_DICT["b_king"]
+        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
     #TODO in possible moves don't include spaces that are threatened by an enemy piece <= need a way to determine that
         
         
 class Knight(Piece): # can jump in L shape => 8 DOF
-    def __init__(self, color: Color) -> None:
+    def __init__(self, color: Color, rect) -> None:
         super().__init__(color)
         self.id = "N"
         self.moveset = [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
@@ -60,6 +61,7 @@ class Knight(Piece): # can jump in L shape => 8 DOF
             self.img = SPRITES_DICT["w_knight"]
         elif color == Color.BLACK:
             self.img = SPRITES_DICT["b_knight"]
+        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
     def calc_possible_moves(self,board) -> list:
         possible_moves = []
@@ -72,7 +74,7 @@ class Knight(Piece): # can jump in L shape => 8 DOF
 
 
 class Bishop(Piece): # can move diagonally => 4 DOF
-    def __init__(self, color: Color) -> None:
+    def __init__(self, color: Color, rect) -> None:
         super().__init__(color)
         self.id = "B"
         self.moveset = ["NE","SE","SO","NO"]
@@ -80,10 +82,11 @@ class Bishop(Piece): # can move diagonally => 4 DOF
             self.img = SPRITES_DICT["w_bishop"]
         elif color == Color.BLACK:
             self.img = SPRITES_DICT["b_bishop"]
+        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
 
 class Rook(Piece): # can move horizontally and vertically => 4 DOF
-    def __init__(self, color: Color) -> None:
+    def __init__(self, color: Color, rect) -> None:
         super().__init__(color)
         self.id = "R"
         self.moveset = ["N","E","S","O"]
@@ -91,10 +94,11 @@ class Rook(Piece): # can move horizontally and vertically => 4 DOF
             self.img = SPRITES_DICT["w_rook"]
         elif color == Color.BLACK:
             self.img = SPRITES_DICT["b_rook"]
+        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
 
 class Pawn(Piece): # 1.5 DOF
-    def __init__(self, color: Color) -> None:
+    def __init__(self, color: Color, rect) -> None:
         super().__init__(color)
         self.id = "p"
         if color == Color.WHITE:
@@ -107,6 +111,7 @@ class Pawn(Piece): # 1.5 DOF
             self.img = SPRITES_DICT["b_pawn"]
         else:
             raise Exception("Color value should be WHITE or BLACK")
+        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
     def calc_possible_moves(self,board) -> list:
         #TODO: move diagonally one if it is capturing a piece

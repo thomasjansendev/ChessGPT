@@ -64,32 +64,32 @@ def init_board_dict():
 def set_pieces(board_dict: dict) -> dict:
     
     #WHITE PIECES
-    board_dict["a1"]["piece"] = Rook(Color.WHITE)
-    board_dict["b1"]["piece"] = Knight(Color.WHITE)
-    board_dict["c1"]["piece"] = Bishop(Color.WHITE)
-    board_dict["d1"]["piece"] = Queen(Color.WHITE)
-    board_dict["e1"]["piece"] = King(Color.WHITE)
-    board_dict["f1"]["piece"] = Bishop(Color.WHITE)
-    board_dict["g1"]["piece"] = Knight(Color.WHITE)
-    board_dict["h1"]["piece"] = Rook(Color.WHITE)
+    board_dict["a1"]["piece"] = Rook(Color.WHITE,board_dict["a1"]["rect"])
+    board_dict["b1"]["piece"] = Knight(Color.WHITE,board_dict["b1"]["rect"])
+    board_dict["c1"]["piece"] = Bishop(Color.WHITE,board_dict["c1"]["rect"])
+    board_dict["d1"]["piece"] = Queen(Color.WHITE,board_dict["d1"]["rect"])
+    board_dict["e1"]["piece"] = King(Color.WHITE,board_dict["e1"]["rect"])
+    board_dict["f1"]["piece"] = Bishop(Color.WHITE,board_dict["f1"]["rect"])
+    board_dict["g1"]["piece"] = Knight(Color.WHITE,board_dict["g1"]["rect"])
+    board_dict["h1"]["piece"] = Rook(Color.WHITE,board_dict["h1"]["rect"])
     
     #BLACK PIECES
-    board_dict["a8"]["piece"] = Rook(Color.BLACK)
-    board_dict["b8"]["piece"] = Knight(Color.BLACK)
-    board_dict["c8"]["piece"] = Bishop(Color.BLACK)
-    board_dict["d8"]["piece"] = Queen(Color.BLACK)
-    board_dict["e8"]["piece"] = King(Color.BLACK)
-    board_dict["f8"]["piece"] = Bishop(Color.BLACK)
-    board_dict["g8"]["piece"] = Knight(Color.BLACK)
-    board_dict["h8"]["piece"] = Rook(Color.BLACK)
+    board_dict["a8"]["piece"] = Rook(Color.BLACK,board_dict["a8"]["rect"])
+    board_dict["b8"]["piece"] = Knight(Color.BLACK,board_dict["b8"]["rect"])
+    board_dict["c8"]["piece"] = Bishop(Color.BLACK,board_dict["c8"]["rect"])
+    board_dict["d8"]["piece"] = Queen(Color.BLACK,board_dict["d8"]["rect"])
+    board_dict["e8"]["piece"] = King(Color.BLACK,board_dict["e8"]["rect"])
+    board_dict["f8"]["piece"] = Bishop(Color.BLACK,board_dict["f8"]["rect"])
+    board_dict["g8"]["piece"] = Knight(Color.BLACK,board_dict["g8"]["rect"])
+    board_dict["h8"]["piece"] = Rook(Color.BLACK,board_dict["h8"]["rect"])
     
     #PAWNS
     white_pawn_squares = ["a2","b2","c2","d2","e2","f2","g2","h2"]
     for square in white_pawn_squares:
-        board_dict[square]["piece"] = Pawn(Color.WHITE)
+        board_dict[square]["piece"] = Pawn(Color.WHITE,board_dict[square]["rect"])
     black_pawn_squares = ["a7","b7","c7","d7","e7","f7","g7","h7"]
     for square in black_pawn_squares:
-        board_dict[square]["piece"] = Pawn(Color.BLACK)
+        board_dict[square]["piece"] = Pawn(Color.BLACK,board_dict[square]["rect"])
     
     return board_dict
     

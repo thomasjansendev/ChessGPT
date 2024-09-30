@@ -26,6 +26,7 @@ def main():
     test_piece = Queen(Color.WHITE,rect)
     
     dragging = False
+    grabbed_piece = None
     while running:
 
         for event in pygame.event.get():
@@ -33,21 +34,31 @@ def main():
                 running = False
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if test_piece.rect.collidepoint(event.pos):
-                    dragging = True
-                    test_piece.rect.center = (event.pos[0],event.pos[1])
-            
+                for key in board:
+                    grabbed_piece = board[key]["piece"]
+                    print(grabbed_piece)
+                    if grabbed_piece != None and grabbed_piece.rect.collidepoint(event.pos):
+                        dragging = True
+                        grabbed_piece.rect.center = (event.pos[0],event.pos[1])
+                        print(f"{grabbed_piece.id}.{key} {dragging}")
+                        print(grabbed_piece)
+                        break
+                        
             elif event.type == pygame.MOUSEMOTION:
                 if dragging:
-                    test_piece.rect.center = (event.pos[0],event.pos[1])
+                    grabbed_piece.rect.center = (event.pos[0],event.pos[1])
                     
             elif event.type == pygame.MOUSEBUTTONUP:
+                print(grabbed_piece)
                 #TODO: fix bug moving piece on release
-                dragging = False
+                #TODO: update board_dictionary with new piece location
                 for square in board: #TODO: find a more efficient way to do get the rect a mouse is hovering over
                     square_rect = board[square]["rect"]
                     if square_rect.collidepoint(event.pos):
-                        test_piece.rect.topleft = (square_rect.x,square_rect.y)
+                        grabbed_piece.rect.topleft = (square_rect.x,square_rect.y)
+                        break
+                dragging = False
+                grabbed_piece = None
                 
                 
         screen.fill("black")
@@ -55,16 +66,18 @@ def main():
         #TODO: make it so that you draw board only once
         #TODO: only update the piece being moved (instead of redrawing every piece)
         for key in board:
-            img, rect, piece = board[key]['img'], board[key]['rect'], board[key]['piece']
+            #draw squares
+            img, rect = board[key]['img'], board[key]['rect']
             screen.blit(img,rect)
-            if piece != None:
-                screen.blit(piece.img,rect)
+            #draw pieces
+            piece = board[key]['piece']
+            if piece != None and piece != grabbed_piece:
+                screen.blit(piece.img,piece.rect)
+        if grabbed_piece != None:
+            screen.blit(grabbed_piece.img,grabbed_piece.rect)#drawn last to stay on top of other sprites
         
-        screen.blit(test_piece.img, test_piece.rect)
-
         pygame.display.flip()
         dt = clock.tick(60) / 1000
-    
         
 
 def handle_move() -> None: #temporarily putting code here

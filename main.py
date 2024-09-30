@@ -35,27 +35,27 @@ def main():
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for key in board:
-                    grabbed_piece = board[key]["piece"]
-                    print(grabbed_piece)
-                    if grabbed_piece != None and grabbed_piece.rect.collidepoint(event.pos):
+                    if board[key]["piece"] != None and board[key]["piece"].rect.collidepoint(event.pos):
                         dragging = True
+                        grabbed_piece = board[key]["piece"]
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1])
-                        print(f"{grabbed_piece.id}.{key} {dragging}")
+                        board[key]["piece"] = None #remove piece from square
                         print(grabbed_piece)
+                        print(f"{grabbed_piece.id}.{key}")
                         break
                         
-            elif event.type == pygame.MOUSEMOTION:
+            elif event.type == pygame.MOUSEMOTION and grabbed_piece != None:
                 if dragging:
                     grabbed_piece.rect.center = (event.pos[0],event.pos[1])
                     
-            elif event.type == pygame.MOUSEBUTTONUP:
-                print(grabbed_piece)
-                #TODO: fix bug moving piece on release
+            elif event.type == pygame.MOUSEBUTTONUP and grabbed_piece != None:
                 #TODO: update board_dictionary with new piece location
-                for square in board: #TODO: find a more efficient way to do get the rect a mouse is hovering over
-                    square_rect = board[square]["rect"]
+                for key in board: #TODO: find a more efficient way to do find the square a mouse is hovering over -> .collidedict perhaps
+                    square_rect = board[key]["rect"]
                     if square_rect.collidepoint(event.pos):
                         grabbed_piece.rect.topleft = (square_rect.x,square_rect.y)
+                        board[key]["piece"] = grabbed_piece #add piece to square
+                        print(key)
                         break
                 dragging = False
                 grabbed_piece = None

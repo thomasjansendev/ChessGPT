@@ -38,6 +38,7 @@ def main():
                     if board[key]["piece"] != None and board[key]["piece"].rect.collidepoint(event.pos):
                         dragging = True
                         grabbed_piece = board[key]["piece"]
+                        square_of_origin = board[key]
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1])
                         board[key]["piece"] = None #remove piece from square
                         print(grabbed_piece)
@@ -52,10 +53,15 @@ def main():
                 #TODO: update board_dictionary with new piece location
                 for key in board: #TODO: find a more efficient way to do find the square a mouse is hovering over -> .collidedict perhaps
                     square_rect = board[key]["rect"]
+                    square_piece = board[key]["piece"]
                     if square_rect.collidepoint(event.pos):
-                        grabbed_piece.rect.topleft = (square_rect.x,square_rect.y)
-                        board[key]["piece"] = grabbed_piece #add piece to square
-                        print(key)
+                        if square_piece == None:
+                            grabbed_piece.rect.topleft = (square_rect.x,square_rect.y)
+                            board[key]["piece"] = grabbed_piece #add piece to square
+                            print(key)
+                        else:
+                            grabbed_piece.rect.topleft = (square_of_origin["rect"].x,square_of_origin["rect"].y)  
+                            square_of_origin["piece"] = grabbed_piece  
                         break
                 dragging = False
                 grabbed_piece = None

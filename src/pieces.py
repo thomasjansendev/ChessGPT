@@ -26,14 +26,15 @@ class Piece:
     
     
 class Queen(Piece): # can move in any direction => 8 DOF
-    def __init__(self, color: Color) -> None:
+    def __init__(self, color: Color, rect) -> None:
         super().__init__(color)
         self.id = "Q"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         if color == Color.WHITE:
-            self.sprite = SPRITES_DICT["w_queen"]
+            self.img = SPRITES_DICT["w_queen"]
         elif color == Color.BLACK:
-            self.sprite = SPRITES_DICT["b_queen"]
+            self.img = SPRITES_DICT["b_queen"]
+        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
         
 class King(Piece): # can move to any adjacent square by 1 => 8 DOF
@@ -43,9 +44,9 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         self.movedepth = 1
         if color == Color.WHITE:
-            self.sprite = SPRITES_DICT["w_king"]
+            self.img = SPRITES_DICT["w_king"]
         elif color == Color.BLACK:
-            self.sprite = SPRITES_DICT["b_king"]
+            self.img = SPRITES_DICT["b_king"]
         
     #TODO in possible moves don't include spaces that are threatened by an enemy piece <= need a way to determine that
         
@@ -56,9 +57,9 @@ class Knight(Piece): # can jump in L shape => 8 DOF
         self.id = "N"
         self.moveset = [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
         if color == Color.WHITE:
-            self.sprite = SPRITES_DICT["w_knight"]
+            self.img = SPRITES_DICT["w_knight"]
         elif color == Color.BLACK:
-            self.sprite = SPRITES_DICT["b_knight"]
+            self.img = SPRITES_DICT["b_knight"]
 
     def calc_possible_moves(self,board) -> list:
         possible_moves = []
@@ -76,9 +77,9 @@ class Bishop(Piece): # can move diagonally => 4 DOF
         self.id = "B"
         self.moveset = ["NE","SE","SO","NO"]
         if color == Color.WHITE:
-            self.sprite = SPRITES_DICT["w_bishop"]
+            self.img = SPRITES_DICT["w_bishop"]
         elif color == Color.BLACK:
-            self.sprite = SPRITES_DICT["b_bishop"]
+            self.img = SPRITES_DICT["b_bishop"]
 
 
 class Rook(Piece): # can move horizontally and vertically => 4 DOF
@@ -87,9 +88,9 @@ class Rook(Piece): # can move horizontally and vertically => 4 DOF
         self.id = "R"
         self.moveset = ["N","E","S","O"]
         if color == Color.WHITE:
-            self.sprite = SPRITES_DICT["w_rook"]
+            self.img = SPRITES_DICT["w_rook"]
         elif color == Color.BLACK:
-            self.sprite = SPRITES_DICT["b_rook"]
+            self.img = SPRITES_DICT["b_rook"]
 
 
 class Pawn(Piece): # 1.5 DOF
@@ -99,11 +100,11 @@ class Pawn(Piece): # 1.5 DOF
         if color == Color.WHITE:
             self.moveset = ["N","NE","NO"]
             self.starting_rank = 6
-            self.sprite = SPRITES_DICT["w_pawn"]
+            self.img = SPRITES_DICT["w_pawn"]
         elif color == Color.BLACK:
             self.moveset = ["S","SE","SO"]
             self.starting_rank = 1
-            self.sprite = SPRITES_DICT["b_pawn"]
+            self.img = SPRITES_DICT["b_pawn"]
         else:
             raise Exception("Color value should be WHITE or BLACK")
         

@@ -21,12 +21,11 @@ def main():
     current_player = Color.WHITE
     
     #temporary variable to help with dev
-    center_x, center_y = SCREEN_WIDTH/2, SCREEN_HEIGHT/2               
-    piece = Queen(Color.WHITE)
-    piece_img = piece.sprite
-    piece_img_rect = piece_img.get_rect(topleft=(center_x, center_y))
-    dragging = False
+    center_x, center_y = SCREEN_WIDTH/2, SCREEN_HEIGHT/2   
+    rect = pygame.Rect(center_x,center_y,CELL_WIDTH,CELL_HEIGHT)     
+    test_piece = Queen(Color.WHITE,rect)
     
+    dragging = False
     while running:
 
         for event in pygame.event.get():
@@ -34,31 +33,34 @@ def main():
                 running = False
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if piece_img_rect.collidepoint(event.pos):
+                if test_piece.rect.collidepoint(event.pos):
                     dragging = True
-                    piece_img_rect.center = (event.pos[0],event.pos[1])
+                    test_piece.rect.center = (event.pos[0],event.pos[1])
+            
             elif event.type == pygame.MOUSEMOTION:
                 if dragging:
-                    piece_img_rect.center = (event.pos[0],event.pos[1])
+                    test_piece.rect.center = (event.pos[0],event.pos[1])
                     
             elif event.type == pygame.MOUSEBUTTONUP:
+                #TODO: fix bug moving piece on release
                 dragging = False
-                for square in board:
+                for square in board: #TODO: find a more efficient way to do get the rect a mouse is hovering over
                     square_rect = board[square]["rect"]
                     if square_rect.collidepoint(event.pos):
-                        piece_img_rect.topleft = (square_rect.x,square_rect.y)
+                        test_piece.rect.topleft = (square_rect.x,square_rect.y)
                 
                 
         screen.fill("black")
         
-        #TODO: make this a onetime operation instead of drawing each cell individually each frame -> input to screen.fill ?
+        #TODO: make it so that you draw board only once
+        #TODO: only update the piece being moved (instead of redrawing every piece)
         for key in board:
-            img = board[key]['img']
-            rect = board[key]['rect']
+            img, rect, piece = board[key]['img'], board[key]['rect'], board[key]['piece']
             screen.blit(img,rect)
+            if piece != None:
+                screen.blit(piece.img,rect)
         
-        screen.blit(square_img,square_img_rect)
-        screen.blit(piece_img, piece_img_rect)
+        screen.blit(test_piece.img, test_piece.rect)
 
         pygame.display.flip()
         dt = clock.tick(60) / 1000

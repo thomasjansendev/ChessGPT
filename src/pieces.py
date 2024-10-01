@@ -13,7 +13,7 @@ class Piece:
         position = self.get_position(board)
         possible_moves = []
         possible_moves_dict = cardinal_array_search(board,position,self.moveset,self.color,depth=self.movedepth)
-        for direction in possible_moves:
+        for direction in possible_moves_dict:
             possible_moves += possible_moves_dict[direction]
         return possible_moves
 
@@ -146,7 +146,6 @@ class Pawn(Piece): # 1.5 DOF
         
 
 def cardinal_array_search(board: list, origin: tuple, directions: list, color, depth: int = None) -> dict:
-
     #check depth is well defined
     if depth == None: depth = len(board) #default to searching whole array
     elif depth < len(board): depth += 1 #+1 because range() excludes the upper bound

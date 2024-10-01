@@ -43,6 +43,7 @@ def main():
                         grabbed_piece = square_dict["piece"] 
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
                         possible_moves = grabbed_piece.calc_possible_moves(board_dict_to_array(board))
+                        print(possible_moves)
                         square_of_origin = square_dict #used to return piece to square in case move is invalid 
                         square_dict["piece"] = None #removes piece from square
                         break    

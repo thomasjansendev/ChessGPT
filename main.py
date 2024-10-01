@@ -16,18 +16,13 @@ def main():
     dt = 0
     
     #Chess Initialization
-    #board = init_board_array()
     board = set_pieces(init_board_dict())
     current_player = Color.WHITE
-    
-    #temporary variable to help with dev
-    center_x, center_y = SCREEN_WIDTH/2, SCREEN_HEIGHT/2   
-    rect = pygame.Rect(center_x,center_y,CELL_WIDTH,CELL_HEIGHT)     
-    test_piece = Queen(Color.WHITE,rect)
-    
     dragging = False
     grabbed_piece = None
     possible_moves = None
+    captured_pieces = []
+    
     while running:
 
         for event in pygame.event.get():
@@ -35,8 +30,8 @@ def main():
                 running = False
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                for key in board:
-                    square_dict = board[key]
+                for square in board:
+                    square_dict = board[square]
                     if square_dict["piece"] != None and square_dict["piece"].rect.collidepoint(event.pos):
                         dragging = True
                         grabbed_piece = square_dict["piece"] 
@@ -45,24 +40,27 @@ def main():
                         print(f"Possible moves: {possible_moves}")
                         square_of_origin = square_dict #used to return piece to square in case move is invalid 
                         square_dict["piece"] = None #removes piece from square
-                        break
-                        
+                        break    
+                    
             elif event.type == pygame.MOUSEMOTION and grabbed_piece != None:
                 if dragging:
                     grabbed_piece.rect.center = (event.pos[0],event.pos[1])
-                    
+            
             elif event.type == pygame.MOUSEBUTTONUP and grabbed_piece != None:
-                #TODO: update board_dictionary with new piece location
                 #TODO: find a more efficient way to do find the square a mouse is hovering over -> .collidedict perhaps
                 #       -> only check the squares corresponding to the possible moves !
-                for key in board:
-                    square_rect = board[key]["rect"]
-                    square_piece = board[key]["piece"]
+                for square in board:
+                    square_rect = board[square]["rect"]
+                    square_piece = board[square]["piece"]
                     if square_rect.collidepoint(event.pos):
-                        if key in possible_moves and square_piece == None:
-                            grabbed_piece.rect.topleft = (square_rect.x,square_rect.y)
-                            board[key]["piece"] = grabbed_piece #add piece to square
-                            print_algebraic_notation(grabbed_piece,key)
+                        if square in possible_moves:
+                            grabbed_piece.rect.center = square_rect.center
+                            if square_piece != None and square_piece.color != grabbed_piece.color: #piece capture
+                                captured_pieces.append(board[square]["piece"])
+                                print(captured_pieces)
+                            board[square]["piece"] = grabbed_piece #add piece to square
+                            print_algebraic_notation(grabbed_piece,square)
+                            pass                  
                         else:
                             grabbed_piece.rect.topleft = (square_of_origin["rect"].x,square_of_origin["rect"].y)  
                             square_of_origin["piece"] = grabbed_piece  
@@ -77,12 +75,12 @@ def main():
         #TODO: make it so that you draw board only once
         #TODO: only update the piece being moved (instead of redrawing every piece)
 
-        for key in board:
+        for square in board:
             #draw squares
-            img, rect = board[key]['img'], board[key]['rect']
+            img, rect = board[square]['img'], board[square]['rect']
             screen.blit(img,rect)
             #draw pieces
-            piece = board[key]['piece']
+            piece = board[square]['piece']
             if piece != None and piece != grabbed_piece:
                 screen.blit(piece.img,piece.rect)
         #draw possible moves

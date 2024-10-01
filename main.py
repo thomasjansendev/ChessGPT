@@ -9,20 +9,24 @@ from src.board import *
 def main():
     
     
-    #Pygame Initialization
+    # Pygame Initialization
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     running = True
     dt = 0
     
-    #Chess Initialization
+    # Chess Initialization
     board = set_pieces(init_board_dict())
     current_player = Color.WHITE
+    
+    # Game state variables
     dragging = False
     grabbed_piece = None
     possible_moves = None
     captured_pieces = []
+    turn_number = 1
+    gamelog = {}
     
     while running:
 
@@ -39,7 +43,6 @@ def main():
                         grabbed_piece = square_dict["piece"] 
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
                         possible_moves = grabbed_piece.calc_possible_moves(board_dict_to_array(board))
-                        print(f"Possible moves: {possible_moves}")
                         square_of_origin = square_dict #used to return piece to square in case move is invalid 
                         square_dict["piece"] = None #removes piece from square
                         break    
@@ -59,11 +62,10 @@ def main():
                             grabbed_piece.rect.center = square_rect.center
                             if square_piece != None and square_piece.color != grabbed_piece.color: #piece capture
                                 captured_pieces.append(board[square]["piece"])
-                                print(captured_pieces)
                             board[square]["piece"] = grabbed_piece #add piece to square
                             current_player = change_current_player(current_player)
-                            print_algebraic_notation(grabbed_piece,square)
-                            pass                  
+                            gamelog, turn_number = update_gamelog(gamelog,turn_number,grabbed_piece,square)              
+                            print_gamelog(gamelog)
                         else:
                             grabbed_piece.rect.topleft = (square_of_origin["rect"].x,square_of_origin["rect"].y)  
                             square_of_origin["piece"] = grabbed_piece  
@@ -96,20 +98,6 @@ def main():
         
         pygame.display.flip()
         dt = clock.tick(60) / 1000
-        
-
-def handle_move() -> None: #temporarily putting code here
-    print(f"{current_player.name} to move: ")
-    result = None
-    while result is None:
-        try:
-            result = new_move(board,current_player)
-            board = result
-            print_board(board)
-        except Exception as e:
-            print(e)
-    if current_player == Color.WHITE: current_player = Color.BLACK
-    elif current_player == Color.BLACK: current_player = Color.WHITE
 
 
 if __name__ == "__main__":

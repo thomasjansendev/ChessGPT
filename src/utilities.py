@@ -1,3 +1,4 @@
+from os import system, name
 from src.constants import *
 # from src.pieces import *
 
@@ -36,12 +37,20 @@ def debug_move(board,old_pos_str,new_pos_str): #used for testing to move a piece
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
     board[old_pos_index[0]][old_pos_index[1]] = " "
 
-def print_algebraic_notation(piece, square: str) -> None:
-    if piece.id == 'p':
-        id = ''
-    else:
-        id = piece.id
-    print(f"{id}{square}")
+def print_gamelog(gamelog) -> None:
+    clear()
+    for key in gamelog:
+        print(f"{key}. {gamelog[key]}")
+    
+def update_gamelog(gamelog: dict, turn_number: int, piece, square: str) -> dict:
+    if piece.id == 'p': id = ''
+    else: id = piece.id
+    if piece.color == Color.WHITE:
+        gamelog[turn_number] = f"{id}{square}"
+    elif piece.color == Color.BLACK:
+        gamelog[turn_number] += f" {id}{square}"
+        turn_number += 1
+    return gamelog, turn_number
     
 def board_dict_to_array(board: dict) -> list:
     board_array = [[None for _ in range(8)] for _ in range(8)] #initialize empty board
@@ -61,4 +70,12 @@ def change_current_player(current_player) -> Color:
         return Color.BLACK
     elif current_player == Color.BLACK:
         return Color.WHITE
+    
+def clear(): #clears the console line
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
     

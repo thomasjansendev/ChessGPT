@@ -1,5 +1,5 @@
 from enum import Enum
-from src.constants import ARRAY_CARDINALS
+from src.constants import ARRAY_CARDINALS, BOARD_REF
 from src.sprites import SPRITES_DICT
 
 Color = Enum('Color', ['WHITE', 'BLACK'])
@@ -119,7 +119,6 @@ class Pawn(Piece): # 1.5 DOF
         possible_moves = []
         position = self.get_position(board)
         
-        #TODO: fix later once playing as black is possible (starting row for black is 1)
         if position[0] == self.starting_rank: 
             move_depth = 2 #can move up-two if on starting position
         else:  
@@ -151,8 +150,8 @@ def cardinal_array_search(array: list, origin: tuple, directions: list, depth: i
                 origin[1] + ARRAY_CARDINALS[direction][1] * i ) 
             
             if 0 <= p[0] < len(array) and 0 <= p[1] < len(array): #check if within boundaries of board
-                #r = BOARD_REF[p[0]][p[1]] # to return square name (e.g. 'a1' 'g8')
-                r = p # to return indices 
+                r = BOARD_REF[p[0]][p[1]] # to return square name (e.g. 'a1' 'g8')
+                #r = p # to return indices 
                 #r = array[p[0]][p[1]] # to return board contents
                 
                 if direction in results: results[direction].append(r)

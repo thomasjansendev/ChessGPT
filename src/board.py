@@ -36,8 +36,8 @@ def init_empty_board() -> list:
     return board
 
 def init_board_dict(): 
-    # Returns a dictionary containing a key for each square on the board 
-    # Each square/key stores the image and rect used to display the square
+    # Returns a dictionary containing a key for each square on the board
+    # Initiliazes an empty board -> set_pieces() is used to fill board with starting piece positions 
     board_dict = dict()
     
     is_light = False
@@ -54,14 +54,17 @@ def init_board_dict():
             y = row * CELL_HEIGHT
             square_img_rect = square_img.get_rect(topleft=(x,y))
             
-            board_dict[square_name] = {'img': square_img, 
-                                       'rect': square_img_rect, 
-                                       'piece': None}
+            board_dict[square_name] = {'index': (row,col), # Used to convert to array to calc_possible_moves
+                                       'img': square_img, # Used to store sprite to draw to screen
+                                       'rect': square_img_rect, # Used to store the square's hitbox
+                                       'piece': None # used to store the current piece on the square
+                                       }
             is_light = not is_light
             
     return board_dict
 
 def set_pieces(board_dict: dict) -> dict:
+    # Fills the board dictionary with the pieces at their starting position
     
     #WHITE PIECES
     board_dict["a1"]["piece"] = Rook(Color.WHITE,board_dict["a1"]["rect"])

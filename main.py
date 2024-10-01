@@ -27,6 +27,7 @@ def main():
     
     dragging = False
     grabbed_piece = None
+    possible_moves = None
     while running:
 
         for event in pygame.event.get():
@@ -35,13 +36,15 @@ def main():
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for key in board:
-                    if board[key]["piece"] != None and board[key]["piece"].rect.collidepoint(event.pos):
+                    square_dict = board[key]
+                    if square_dict["piece"] != None and square_dict["piece"].rect.collidepoint(event.pos):
                         dragging = True
-                        grabbed_piece = board[key]["piece"]
-                        square_of_origin = board[key]
-                        grabbed_piece.rect.center = (event.pos[0],event.pos[1])
-                        board[key]["piece"] = None #remove piece from square
-                        # print(grabbed_piece)
+                        grabbed_piece = square_dict["piece"] 
+                        grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
+                        possible_moves = grabbed_piece.calc_possible_moves(board_dict_to_array(board))
+                        print(f"Possible moves: {possible_moves}")
+                        square_of_origin = square_dict #used to return piece to square in case move is invalid 
+                        square_dict["piece"] = None #removes piece from square
                         break
                         
             elif event.type == pygame.MOUSEMOTION and grabbed_piece != None:
@@ -64,12 +67,14 @@ def main():
                         break
                 dragging = False
                 grabbed_piece = None
+                possible_moves = None
                 
                 
         screen.fill("black")
         
         #TODO: make it so that you draw board only once
         #TODO: only update the piece being moved (instead of redrawing every piece)
+
         for key in board:
             #draw squares
             img, rect = board[key]['img'], board[key]['rect']
@@ -78,8 +83,13 @@ def main():
             piece = board[key]['piece']
             if piece != None and piece != grabbed_piece:
                 screen.blit(piece.img,piece.rect)
+        #draw possible moves
+        if possible_moves != None:
+            for move in possible_moves:
+                pygame.draw.circle(screen, (0,0,0), board[move]['rect'].center, 10)
+
         if grabbed_piece != None:
-            screen.blit(grabbed_piece.img,grabbed_piece.rect)#drawn last to stay on top of other sprites
+            screen.blit(grabbed_piece.img,grabbed_piece.rect) #drawn last to stay on top of other sprites
         
         pygame.display.flip()
         dt = clock.tick(60) / 1000

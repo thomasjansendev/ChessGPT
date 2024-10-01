@@ -26,13 +26,14 @@ def main():
     while running:
 
         for event in pygame.event.get():
+            
             if event.type == pygame.QUIT: 
                 running = False
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for square in board:
                     square_dict = board[square]
-                    if square_dict["piece"] != None and square_dict["piece"].rect.collidepoint(event.pos):
+                    if square_dict["piece"] != None and square_dict["piece"].color == current_player and square_dict["piece"].rect.collidepoint(event.pos):
                         dragging = True
                         grabbed_piece = square_dict["piece"] 
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
@@ -59,6 +60,7 @@ def main():
                                 captured_pieces.append(board[square]["piece"])
                                 print(captured_pieces)
                             board[square]["piece"] = grabbed_piece #add piece to square
+                            current_player = change_current_player(current_player)
                             print_algebraic_notation(grabbed_piece,square)
                             pass                  
                         else:

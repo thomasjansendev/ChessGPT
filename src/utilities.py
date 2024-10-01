@@ -55,4 +55,10 @@ def board_dict_to_array(board: dict) -> list:
         board_array[row][col] = piece
     
     return board_array
+
+def change_current_player(current_player) -> Color:
+    if current_player == Color.WHITE:
+        return Color.BLACK
+    elif current_player == Color.BLACK:
+        return Color.WHITE
     

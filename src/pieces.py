@@ -1,6 +1,6 @@
 from src.constants import ARRAY_CARDINALS, BOARD_REF, Color
 from src.sprites import SPRITES_DICT
-from src.utilities import idx_to_name
+from src.utilities import idx_to_name, name_to_idx
 
 class Piece:
     def __init__(self, color: Color) -> None:
@@ -11,7 +11,10 @@ class Piece:
             
     def calc_possible_moves(self,board: list) -> list:
         position = self.get_position(board)
-        possible_moves = cardinal_array_search(board,position,self.moveset,self.color,depth=self.movedepth)
+        possible_moves = []
+        possible_moves_dict = cardinal_array_search(board,position,self.moveset,self.color,depth=self.movedepth)
+        for direction in possible_moves:
+            possible_moves += possible_moves_dict[direction]
         return possible_moves
 
     def get_position(self, board: list) -> tuple:
@@ -68,8 +71,7 @@ class Knight(Piece): # can jump in L shape => 8 DOF
                 if content != None and content.color != self.color:
                     possible_moves.append(idx_to_name(new_move))
                 elif content == None:
-                    possible_moves.append(idx_to_name(new_move))
-                    
+                    possible_moves.append(idx_to_name(new_move))   
         return possible_moves
 
 
@@ -121,23 +123,39 @@ class Pawn(Piece): # 1.5 DOF
             move_depth = 2 #can move up-two if on starting position
         else:  
             move_depth = 1 #move up one
-        possible_moves = cardinal_array_search(board,position,self.moveset[0],self.color,depth=move_depth)        
+        
+        possible_moves = []
+        possible_moves_dict = cardinal_array_search(board,position,self.moveset,self.color,depth=move_depth)        
+        #filter moves on vertical 'N' or 'S'
+        for move in possible_moves_dict[self.moveset[0]]: 
+            content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
+            if content == None:
+                possible_moves.append(move)
+        #filter moves on first diagonal 'NE' or 'SE'
+        for move in possible_moves_dict[self.moveset[1]]:
+            content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
+            if content != None and content.color != self.color:
+                possible_moves.append(move)
+        #filter moves on second diagonal 'NO' or 'SO'
+        for move in possible_moves_dict[self.moveset[2]]:
+            content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
+            if content != None and content.color != self.color:
+                possible_moves.append(move)
+        
         return possible_moves
         
 
-def cardinal_array_search(board: list, origin: tuple, directions: list, color, depth: int = None):
-    #TODO: snip the last element of possible moves if it is a piece of the same colour
-    #TODO: Optimize full search: figure out shortest length needed instead of searching the whole length of array
+def cardinal_array_search(board: list, origin: tuple, directions: list, color, depth: int = None) -> dict:
 
     #check depth is well defined
     if depth == None: depth = len(board) #default to searching whole array
-    elif depth < 0: depth = 0
     elif depth < len(board): depth += 1 #+1 because range() excludes the upper bound
     elif depth >= len(board): depth = len(board) #caping the value of depth
 
-    results = []
+    #TODO: change output to dict
+    results = {}
     for direction in directions: #enables multidirectional search    
-        
+        results[direction] = []
         for i in range(1,depth):
             
             position = ( origin[0] + ARRAY_CARDINALS[direction][0] * i,
@@ -151,10 +169,9 @@ def cardinal_array_search(board: list, origin: tuple, directions: list, color, d
                 if content != None and content.color == color: #ignore pieces of the same color
                     break
                 elif content != None and content.color != color:
-                    results.append(result)
+                    results[direction].append(result)
                     break
                 else:
-                    results.append(result)
-                    
+                    results[direction].append(result)
     
     return results

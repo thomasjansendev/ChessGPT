@@ -9,20 +9,17 @@ class Piece:
         self.color = color
         self.id = None
         self.moveset = None
-        self.movedepth = None
-        
+        self.movedepth = None        
+            
+    def calc_possible_moves(self,board: list) -> list:
+        position = self.get_position(board)
+        possible_moves = cardinal_array_search(board,position,self.moveset,self.color,depth=self.movedepth)
+        return possible_moves
+
     def get_position(self, board: list) -> tuple:
         for i in range(0,len(board)):
             if self in board[i]:
                 return (i, board[i].index(self))
-            
-    def calc_possible_moves(self,board) -> list:
-        possible_moves = []
-        position = self.get_position(board)
-        moves_dict = cardinal_array_search(board,position,self.moveset,self.movedepth)
-        for key in moves_dict:
-            possible_moves += moves_dict[key]
-        return possible_moves
     
     
 class Queen(Piece): # can move in any direction => 8 DOF
@@ -103,11 +100,11 @@ class Pawn(Piece): # 1.5 DOF
         self.id = "p"
         if color == Color.WHITE:
             self.moveset = ["N","NE","NO"]
-            self.starting_rank = 6
+            self.starting_row = 6
             self.img = SPRITES_DICT["w_pawn"]
         elif color == Color.BLACK:
             self.moveset = ["S","SE","SO"]
-            self.starting_rank = 1
+            self.starting_row = 1
             self.img = SPRITES_DICT["b_pawn"]
         else:
             raise Exception("Color value should be WHITE or BLACK")
@@ -116,48 +113,45 @@ class Pawn(Piece): # 1.5 DOF
     def calc_possible_moves(self,board) -> list:
         #TODO: move diagonally one if it is capturing a piece
         #TODO: en-passant
-        possible_moves = []
         position = self.get_position(board)
-        
-        if position[0] == self.starting_rank: 
+        if position[0] == self.starting_row: 
             move_depth = 2 #can move up-two if on starting position
         else:  
             move_depth = 1 #move up one
-        
-        moves_dict = cardinal_array_search(board,position,self.moveset[0],move_depth)
-        for key in moves_dict:
-            possible_moves += moves_dict[key]
-        
+        possible_moves = cardinal_array_search(board,position,self.moveset[0],self.color,depth=move_depth)        
         return possible_moves
         
 
-def cardinal_array_search(array: list, origin: tuple, directions: list, depth: int = None):
+def cardinal_array_search(board: list, origin: tuple, directions: list, color, depth: int = None):
     #TODO: snip the last element of possible moves if it is a piece of the same colour
     #TODO: Optimize full search: figure out shortest length needed instead of searching the whole length of array
 
     #check depth is well defined
-    if depth == None: depth = len(array) #default to searching whole array
+    if depth == None: depth = len(board) #default to searching whole array
     elif depth < 0: depth = 0
-    elif depth < len(array): depth += 1 #+1 because range() excludes the upper bound
-    elif depth >= len(array): depth = len(array) #caping the value of depth
+    elif depth < len(board): depth += 1 #+1 because range() excludes the upper bound
+    elif depth >= len(board): depth = len(board) #caping the value of depth
 
-    results = {}
+    results = []
     for direction in directions: #enables multidirectional search    
         
-        for i in range(1,depth): #only works for square arrays such as a chess board
+        for i in range(1,depth):
             
-            p = ( origin[0] + ARRAY_CARDINALS[direction][0] * i,
-                origin[1] + ARRAY_CARDINALS[direction][1] * i ) 
+            position = ( origin[0] + ARRAY_CARDINALS[direction][0] * i,
+                         origin[1] + ARRAY_CARDINALS[direction][1] * i ) 
             
-            if 0 <= p[0] < len(array) and 0 <= p[1] < len(array): #check if within boundaries of board
-                r = BOARD_REF[p[0]][p[1]] # to return square name (e.g. 'a1' 'g8')
+            if 0 <= position[0] < len(board) and 0 <= position[1] < len(board): #check if within boundaries of board
+                result = BOARD_REF[position[0]][position[1]] # to return square name (e.g. 'a1' 'g8')
+                content = board[position[0]][position[1]]
                 #r = p # to return indices 
-                #r = array[p[0]][p[1]] # to return board contents
-                
-                if direction in results: results[direction].append(r)
-                else: results[direction] = [r]
-                
-                if array[p[0]][p[1]] != None: #true: piece is hit
+                #r = board[p[0]][p[1]] # to return board contents
+                if content != None and content.color == color: #ignore pieces of the same color
                     break
+                elif content != None and content.color != color:
+                    results.append(result)
+                    break
+                else:
+                    results.append(result)
+                    
     
     return results

@@ -48,7 +48,7 @@ def main():
             
             elif event.type == pygame.MOUSEBUTTONUP and grabbed_piece != None:
                 #TODO: find a more efficient way to do find the square a mouse is hovering over -> .collidedict perhaps
-                #       -> only check the squares corresponding to the possible moves !
+                #TODO: solution: only check the squares corresponding to the possible moves
                 for square in board:
                     square_rect = board[square]["rect"]
                     square_piece = board[square]["piece"]
@@ -72,9 +72,9 @@ def main():
                 
         screen.fill("black")
         
+
         #TODO: make it so that you draw board only once
         #TODO: only update the piece being moved (instead of redrawing every piece)
-
         for square in board:
             #draw squares
             img, rect = board[square]['img'], board[square]['rect']
@@ -87,7 +87,7 @@ def main():
         if possible_moves != None:
             for move in possible_moves:
                 pygame.draw.circle(screen, (0,0,0), board[move]['rect'].center, 10)
-
+        #draw new position of grabbed_piece
         if grabbed_piece != None:
             screen.blit(grabbed_piece.img,grabbed_piece.rect) #drawn last to stay on top of other sprites
         

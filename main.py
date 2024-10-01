@@ -53,11 +53,13 @@ def main():
                     
             elif event.type == pygame.MOUSEBUTTONUP and grabbed_piece != None:
                 #TODO: update board_dictionary with new piece location
-                for key in board: #TODO: find a more efficient way to do find the square a mouse is hovering over -> .collidedict perhaps
+                #TODO: find a more efficient way to do find the square a mouse is hovering over -> .collidedict perhaps
+                #       -> only check the squares corresponding to the possible moves !
+                for key in board:
                     square_rect = board[key]["rect"]
                     square_piece = board[key]["piece"]
                     if square_rect.collidepoint(event.pos):
-                        if square_piece == None:
+                        if key in possible_moves and square_piece == None:
                             grabbed_piece.rect.topleft = (square_rect.x,square_rect.y)
                             board[key]["piece"] = grabbed_piece #add piece to square
                             print_algebraic_notation(grabbed_piece,key)

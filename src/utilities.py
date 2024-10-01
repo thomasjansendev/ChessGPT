@@ -35,3 +35,11 @@ def debug_move(board,old_pos_str,new_pos_str): #used for testing to move a piece
     new_pos_index = name_to_idx(new_pos_str)
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
     board[old_pos_index[0]][old_pos_index[1]] = " "
+
+def print_algebraic_notation(piece: Piece, square: str) -> None:
+    if piece.id == 'p':
+        id = ''
+    else:
+        id = piece.id
+    print(f"{id}{square}")
+    

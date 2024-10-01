@@ -41,8 +41,7 @@ def main():
                         square_of_origin = board[key]
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1])
                         board[key]["piece"] = None #remove piece from square
-                        print(grabbed_piece)
-                        print(f"{grabbed_piece.id}.{key}")
+                        # print(grabbed_piece)
                         break
                         
             elif event.type == pygame.MOUSEMOTION and grabbed_piece != None:
@@ -58,7 +57,7 @@ def main():
                         if square_piece == None:
                             grabbed_piece.rect.topleft = (square_rect.x,square_rect.y)
                             board[key]["piece"] = grabbed_piece #add piece to square
-                            print(key)
+                            print_algebraic_notation(grabbed_piece,key)
                         else:
                             grabbed_piece.rect.topleft = (square_of_origin["rect"].x,square_of_origin["rect"].y)  
                             square_of_origin["piece"] = grabbed_piece  

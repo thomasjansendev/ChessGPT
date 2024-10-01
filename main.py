@@ -1,4 +1,5 @@
 import pygame
+from src.utilities import *
 from src.constants import *
 from src.move import *
 from src.pieces import *

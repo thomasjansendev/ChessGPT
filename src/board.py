@@ -2,6 +2,7 @@ import pygame
 from src.sprites import SPRITES_DICT
 from src.utilities import *
 from src.constants import *
+from src.pieces import *
 
 def init_board_array() -> list:
     board = [[None for _ in range(8)] for _ in range(8)]

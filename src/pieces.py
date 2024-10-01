@@ -1,8 +1,6 @@
-from enum import Enum
-from src.constants import ARRAY_CARDINALS, BOARD_REF
+from src.constants import ARRAY_CARDINALS, BOARD_REF, Color
 from src.sprites import SPRITES_DICT
-
-Color = Enum('Color', ['WHITE', 'BLACK'])
+from src.utilities import idx_to_name
 
 class Piece:
     def __init__(self, color: Color) -> None:
@@ -66,7 +64,12 @@ class Knight(Piece): # can jump in L shape => 8 DOF
         for move in self.moveset:
             new_move = (position[0]+move[0],position[1]+move[1]) #add move vector from moveset to the piece's current position
             if 0 <= new_move[0] <= 7 and 0 <= new_move[1] <= 7: #only accept positions that are within board boundaries
-                possible_moves.append(new_move)
+                content = board[new_move[0]][new_move[1]]
+                if content != None and content.color != self.color:
+                    possible_moves.append(idx_to_name(new_move))
+                elif content == None:
+                    possible_moves.append(idx_to_name(new_move))
+                    
         return possible_moves
 
 

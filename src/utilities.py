@@ -1,5 +1,5 @@
 from src.constants import *
-from src.pieces import *
+# from src.pieces import *
 
 # ======= UTILITY FUNCTIONS =======
 
@@ -36,7 +36,7 @@ def debug_move(board,old_pos_str,new_pos_str): #used for testing to move a piece
     board[new_pos_index[0]][new_pos_index[1]] = board[old_pos_index[0]][old_pos_index[1]]
     board[old_pos_index[0]][old_pos_index[1]] = " "
 
-def print_algebraic_notation(piece: Piece, square: str) -> None:
+def print_algebraic_notation(piece, square: str) -> None:
     if piece.id == 'p':
         id = ''
     else:

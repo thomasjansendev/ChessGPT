@@ -48,6 +48,10 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
     #TODO in possible moves don't include spaces that are threatened by an enemy piece <= need a way to determine that
+    # option 1: calculate all the possible moves of enemy pieces then check if kings possible moves are part of that list
+    #           - need a reference to all active pieces of the opposite colour
+    #           
+    
         
         
 class Knight(Piece): # can jump in L shape => 8 DOF
@@ -126,6 +130,8 @@ class Pawn(Piece): # 1.5 DOF
         
         possible_moves = []
         possible_moves_dict = cardinal_array_search(board,position,self.moveset,self.color,depth=move_depth)        
+        
+        #TODO: since the move depth of pawns is just one we can remove the for loop and
         #filter moves on vertical 'N' or 'S'
         for move in possible_moves_dict[self.moveset[0]]: 
             content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
@@ -151,7 +157,6 @@ def cardinal_array_search(board: list, origin: tuple, directions: list, color, d
     elif depth < len(board): depth += 1 #+1 because range() excludes the upper bound
     elif depth >= len(board): depth = len(board) #caping the value of depth
 
-    #TODO: change output to dict
     results = {}
     for direction in directions: #enables multidirectional search    
         results[direction] = []
@@ -174,3 +179,13 @@ def cardinal_array_search(board: list, origin: tuple, directions: list, color, d
                     results[direction].append(result)
     
     return results
+
+def capture_piece(piece,piece_dict):
+    if piece.color == Color.WHITE:
+        piece_dict["active_white"].remove(piece)
+        piece_dict["captured_white"].append(piece)
+    elif piece.color == Color.BLACK:
+        piece_dict["active_black"].remove(piece)
+        piece_dict["captured_black"].append(piece)     
+    return piece_dict
+    

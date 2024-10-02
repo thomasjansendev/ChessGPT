@@ -17,14 +17,13 @@ def main():
     dt = 0
     
     # Chess Initialization
-    board = set_pieces(init_board_dict())
+    board, pieces = init_pieces(init_board_dict())
     current_player = Color.WHITE
     
     # Game state variables
     dragging = False
     grabbed_piece = None
     possible_moves = None
-    captured_pieces = []
     turn_number = 1
     gamelog = {}
     
@@ -40,7 +39,7 @@ def main():
                     square_dict = board[square]
                     if square_dict["piece"] != None and square_dict["piece"].color == current_player and square_dict["piece"].rect.collidepoint(event.pos):
                         dragging = True
-                        grabbed_piece = square_dict["piece"] 
+                        grabbed_piece = square_dict["piece"]
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
                         possible_moves = grabbed_piece.calc_possible_moves(board_dict_to_array(board))
                         print(possible_moves)
@@ -57,13 +56,14 @@ def main():
                 #TODO: solution: only check the squares corresponding to the possible moves
                 for square in board:
                     square_rect = board[square]["rect"]
-                    square_piece = board[square]["piece"]
+                    square_content = board[square]["piece"]
                     if square_rect.collidepoint(event.pos):
                         if square in possible_moves:
+                            #check if an enemy piece is on the square and capture it  
+                            if square_content != None and square_content.color != grabbed_piece.color: #capture piece of opposite colour
+                                pieces = capture_piece(square_content,pieces)
                             grabbed_piece.rect.center = square_rect.center
-                            if square_piece != None and square_piece.color != grabbed_piece.color: #piece capture
-                                captured_pieces.append(board[square]["piece"])
-                            board[square]["piece"] = grabbed_piece #add piece to square
+                            board[square]["piece"] = grabbed_piece #add piece to square onl
                             current_player = change_current_player(current_player)
                             gamelog, turn_number = update_gamelog(gamelog,turn_number,grabbed_piece,square)              
                             print_gamelog(gamelog)

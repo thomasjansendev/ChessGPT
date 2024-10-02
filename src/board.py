@@ -64,37 +64,58 @@ def init_board_dict():
             
     return board_dict
 
-def set_pieces(board_dict: dict) -> dict:
+def init_pieces(board_dict: dict):
     # Fills the board dictionary with the pieces at their starting position
+    # & initializes a dictionary to keep track of the active/captured pieces
+    
+    pieces_dict = {
+        "active_white": [],
+        "active_black": [],
+        "captured_white": [],
+        "captured_black": []
+    }
     
     #WHITE PIECES
-    board_dict["a1"]["piece"] = Rook(Color.WHITE,board_dict["a1"]["rect"])
-    board_dict["b1"]["piece"] = Knight(Color.WHITE,board_dict["b1"]["rect"])
-    board_dict["c1"]["piece"] = Bishop(Color.WHITE,board_dict["c1"]["rect"])
-    board_dict["d1"]["piece"] = Queen(Color.WHITE,board_dict["d1"]["rect"])
-    board_dict["e1"]["piece"] = King(Color.WHITE,board_dict["e1"]["rect"])
-    board_dict["f1"]["piece"] = Bishop(Color.WHITE,board_dict["f1"]["rect"])
-    board_dict["g1"]["piece"] = Knight(Color.WHITE,board_dict["g1"]["rect"])
-    board_dict["h1"]["piece"] = Rook(Color.WHITE,board_dict["h1"]["rect"])
+    board_dict, pieces_dict = set_piece(Rook, Color.WHITE, "a1", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Knight, Color.WHITE, "b1", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Bishop, Color.WHITE, "c1", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Queen, Color.WHITE, "d1", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(King, Color.WHITE, "e1", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Bishop, Color.WHITE, "f1", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Knight, Color.WHITE, "g1", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Rook, Color.WHITE, "h1", board_dict, pieces_dict)
     
     #BLACK PIECES
-    board_dict["a8"]["piece"] = Rook(Color.BLACK,board_dict["a8"]["rect"])
-    board_dict["b8"]["piece"] = Knight(Color.BLACK,board_dict["b8"]["rect"])
-    board_dict["c8"]["piece"] = Bishop(Color.BLACK,board_dict["c8"]["rect"])
-    board_dict["d8"]["piece"] = Queen(Color.BLACK,board_dict["d8"]["rect"])
-    board_dict["e8"]["piece"] = King(Color.BLACK,board_dict["e8"]["rect"])
-    board_dict["f8"]["piece"] = Bishop(Color.BLACK,board_dict["f8"]["rect"])
-    board_dict["g8"]["piece"] = Knight(Color.BLACK,board_dict["g8"]["rect"])
-    board_dict["h8"]["piece"] = Rook(Color.BLACK,board_dict["h8"]["rect"])
+    board_dict, pieces_dict = set_piece(Rook, Color.BLACK, "a8", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Knight, Color.BLACK, "b8", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Bishop, Color.BLACK, "c8", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Queen, Color.BLACK, "d8", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(King, Color.BLACK, "e8", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Bishop, Color.BLACK, "f8", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Knight, Color.BLACK, "g8", board_dict, pieces_dict)
+    board_dict, pieces_dict = set_piece(Rook, Color.BLACK, "h8", board_dict, pieces_dict)
     
     #PAWNS
     white_pawn_squares = ["a2","b2","c2","d2","e2","f2","g2","h2"]
     for square in white_pawn_squares:
-        board_dict[square]["piece"] = Pawn(Color.WHITE,board_dict[square]["rect"])
+        board_dict, pieces_dict = set_piece(Pawn, Color.WHITE, square, board_dict, pieces_dict)
     black_pawn_squares = ["a7","b7","c7","d7","e7","f7","g7","h7"]
     for square in black_pawn_squares:
-        board_dict[square]["piece"] = Pawn(Color.BLACK,board_dict[square]["rect"])
+        board_dict, pieces_dict = set_piece(Pawn, Color.BLACK, square, board_dict, pieces_dict)
     
-    return board_dict
+    return board_dict, pieces_dict
+
+def set_piece(new_piece: Piece, color: Color, square: str, board_dict: dict, pieces_dict: dict):
+    # Initialize new piece
+    new_piece = new_piece(color,board_dict[square]["rect"])
+    # Update board with new piece at specified square
+    board_dict[square]["piece"] = new_piece
+    # Update piece dictionary with new piece
+    if color == color.WHITE:
+        pieces_dict["active_white"].append(new_piece)
+    elif color == color.BLACK:
+        pieces_dict["active_black"].append(new_piece)
+    return board_dict, pieces_dict
+    
     
         

@@ -9,7 +9,7 @@ class Piece:
         self.moveset = None
         self.movedepth = None        
             
-    def calc_possible_moves(self,board: list) -> list:
+    def calc_possible_moves(self, board: list, pieces: dict) -> list:
         position = self.get_position(board)
         possible_moves = []
         possible_moves_dict = cardinal_array_search(board,position,self.moveset,self.color,depth=self.movedepth)
@@ -49,9 +49,16 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         
     #TODO in possible moves don't include spaces that are threatened by an enemy piece <= need a way to determine that
     # option 1: calculate all the possible moves of enemy pieces then check if kings possible moves are part of that list
-    #           - need a reference to all active pieces of the opposite colour
-    #           
+    #           - need a reference to all active pieces of the opposite colour     
     
+    def calc_possible_moves(self, board: list, pieces: dict) -> list:
+        possible_moves = super().calc_possible_moves(board,pieces)
+        enemy_moves = calc_possible_moves_enemy(board,pieces,self.color)
+        filtered_possible_moves = []
+        for move in possible_moves:
+            if move not in enemy_moves:
+                filtered_possible_moves.append(move)
+        return filtered_possible_moves
         
         
 class Knight(Piece): # can jump in L shape => 8 DOF
@@ -65,7 +72,7 @@ class Knight(Piece): # can jump in L shape => 8 DOF
             self.img = SPRITES_DICT["b_knight"]
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
-    def calc_possible_moves(self,board) -> list:
+    def calc_possible_moves(self,board,pieces) -> list:
         possible_moves = []
         position = self.get_position(board)
         for move in self.moveset:
@@ -119,7 +126,7 @@ class Pawn(Piece): # 1.5 DOF
             raise Exception("Color value should be WHITE or BLACK")
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
-    def calc_possible_moves(self,board) -> list:
+    def calc_possible_moves(self, board: list, pieces: dict) -> list:
         #TODO: move diagonally one if it is capturing a piece
         #TODO: en-passant
         position = self.get_position(board)
@@ -188,4 +195,22 @@ def capture_piece(piece,piece_dict):
         piece_dict["active_black"].remove(piece)
         piece_dict["captured_black"].append(piece)     
     return piece_dict
+
+def calc_possible_moves_enemy(board: list, pieces: dict, piece_color: Color):
+    # Used by king to identify squares it shouldn't move to
+    
+    if piece_color == Color.WHITE:
+            enemy_pieces = pieces["active_black"]
+    elif piece_color == Color.BLACK:
+            enemy_pieces = pieces["active_white"]
+            
+    all_possible_moves = []
+    for piece in enemy_pieces:
+        if type(piece) == King:
+            continue
+        #TODO: fix infinite recursion when enemy king is inccluded
+        possible_moves = piece.calc_possible_moves(board,pieces)
+        all_possible_moves += possible_moves
+        
+    return list(set(all_possible_moves)) #convert to set to remove duplicate values
     

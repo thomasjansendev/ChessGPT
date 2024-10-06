@@ -26,10 +26,7 @@ BOARD_REF = [["a8","b8","c8","d8","e8","f8","g8","h8"],
              ["a2","b2","c2","d2","e2","f2","g2","h2"],
              ["a1","b1","c1","d1","e1","f1","g1","h1"]]
 
-# BOARD_REF_DICT is used to efficiently get index locations from a square name
-# key: 'square_name'
-# value: tupple -> index location of a square in a board_array
-# It results in a dictionary = {'a8': (0,0), ..., 'h1': (7,7)}
+# BOARD_REF_DICT is used to get index locations from a square name (e.g. 'a8': (0,0), ..., 'h1': (7,7))
 BOARD_REF_DICT = {}
 for row in range(0,len(BOARD_REF)):
     for col in range(0,len(BOARD_REF[row])):

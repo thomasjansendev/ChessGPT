@@ -46,7 +46,7 @@ def main():
                         print(possible_moves)
                         square_of_origin = square_dict #used to return piece to square in case move is invalid 
                         square_dict["piece"] = None #removes piece from square
-                        break    
+                        break
                     
             elif event.type == pygame.MOUSEMOTION and grabbed_piece != None:
                 if dragging:
@@ -55,23 +55,28 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP and grabbed_piece != None:
                 #TODO: find a more efficient way to do find the square a mouse is hovering over -> .collidedict perhaps
                 #TODO: solution: only check the squares corresponding to the possible moves
-                for square in board:
+                piece_moved_successfuly = False
+                for square in possible_moves:
                     square_rect = board[square]["rect"]
                     square_content = board[square]["piece"]
                     if square_rect.collidepoint(event.pos):
-                        if square in possible_moves:
-                            #check if an enemy piece is on the square and capture it  
-                            if square_content != None and square_content.colour != grabbed_piece.colour: #capture piece of opposite colour
-                                pieces = capture_piece(square_content,pieces)
-                            grabbed_piece.rect.center = square_rect.center
-                            board[square]["piece"] = grabbed_piece #add piece to square onl
-                            current_player = change_current_player(current_player)
-                            gamelog, turn_number = update_gamelog(gamelog,turn_number,grabbed_piece,square)              
-                            print_gamelog(gamelog)
-                        else:
-                            grabbed_piece.rect.topleft = (square_of_origin["rect"].x,square_of_origin["rect"].y)  
-                            square_of_origin["piece"] = grabbed_piece  
+                        # check if an enemy piece is on the square and capture it  
+                        if square_content != None and square_content.colour != grabbed_piece.colour:
+                            pieces = capture_piece(square_content,pieces)
+                        # update board square with new piece
+                        board[square]["piece"] = grabbed_piece
+                        grabbed_piece.rect.center = square_rect.center
+                        # update game state since move is succesful
+                        piece_moved_successfuly = True
+                        current_player = change_current_player(current_player)
+                        gamelog, turn_number = update_gamelog(gamelog,turn_number,grabbed_piece,square)              
+                        print_gamelog(gamelog)
                         break
+                    
+                if not piece_moved_successfuly:
+                    grabbed_piece.rect.center = square_of_origin["rect"].center  
+                    square_of_origin["piece"] = grabbed_piece
+                           
                 dragging = False
                 grabbed_piece = None
                 possible_moves = None

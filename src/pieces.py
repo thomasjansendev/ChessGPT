@@ -61,7 +61,8 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         return super().get_possible_moves(board, pieces)
     
     def get_legal_moves(self, board: list, pieces: dict):
-        possible_moves = self.get_possible_moves(board,pieces)
+        position = self.get_position(board)
+        possible_moves = move_search(board, position, self, filtered=True, format='-list')
         enemy_moves = get_possible_moves_enemy(board,pieces,self.colour)
         legal_moves = []
         for move in possible_moves:
@@ -254,10 +255,12 @@ def get_possible_moves_enemy(board: list, pieces: dict, piece_colour: colour):
     elif piece_colour == colour.BLACK:
             enemy_pieces = pieces["active_white"]
             
-    all_possible_moves = []
+    possible_moves = []
     for piece in enemy_pieces:
-        possible_moves = piece.get_possible_moves(board,pieces)
-        all_possible_moves += possible_moves
+        if type(piece) == King:
+            possible_moves += piece.get_possible_moves(board,pieces)
+        else:
+            possible_moves += piece.get_legal_moves(board,pieces)
         
-    return list(set(all_possible_moves)) #convert to set to remove duplicate values
+    return list(set(possible_moves)) #convert to set to remove duplicate values
     

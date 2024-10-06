@@ -54,7 +54,8 @@ def update_gamelog(gamelog: dict, turn_number: int, piece, square: str) -> dict:
     
 def board_dict_to_array(board: dict) -> list:
     board_array = [[None for _ in range(8)] for _ in range(8)] #initialize empty board
-    # Could be optimized to not reset the board_array each time calc_possible_moves is called 
+    # Could be optimized to not reset the board_array each time get
+    # _possible_moves is called 
     # but then we would need to maintain two sources of truth: board_dict and board_array
     # I chose to prioritize data integrity before trying to optimize for the time being
     for key in board:

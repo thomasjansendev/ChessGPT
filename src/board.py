@@ -55,7 +55,7 @@ def init_board_dict():
             y = row * CELL_HEIGHT
             square_img_rect = square_img.get_rect(topleft=(x,y))
             
-            board_dict[square_name] = {'index': (row,col), # Used to convert to array to calc_possible_moves
+            board_dict[square_name] = {'index': (row,col), # Used to convert to array to get_possible_moves
                                        'img': square_img, # Used to store sprite to draw to screen
                                        'rect': square_img_rect, # Used to store the square's hitbox
                                        'piece': None # used to store the current piece on the square

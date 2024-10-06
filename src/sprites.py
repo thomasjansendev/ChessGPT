@@ -38,12 +38,10 @@ def load_sprites() -> dict: #returns a dictionary of filepaths
         for filename in sprites_filenames:
             if key in filename:
                 sprite_filepath = os.path.join(sprites_dir,filename)
-                # print(f"{key}: {sprite_filepath}")
                 sprite_image = pygame.image.load(sprite_filepath)
                 #TODO: fix scaling of sprites for the pieces (need to be slightly smaller + something wrong with the look)
                 sprite_image = pygame.transform.scale(sprite_image,(SPRITE_WIDTH,SPRITE_HEIGHT))
                 sprites_dict[key] = sprite_image
-                # print(f"{key}: {sprites_dict[key]}")
                 break
     
     return sprites_dict

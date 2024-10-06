@@ -10,7 +10,7 @@ def new_move(board,current_player):
     old_pos_index = name_to_idx(old_pos_str)
     
     piece = board[old_pos_index[0]][old_pos_index[1]]
-    possible_moves = piece.calc_possible_moves(board)
+    possible_moves = piece.get_possible_moves(board)
     possible_moves = list(map(lambda x: idx_to_name(x),possible_moves))
     
     #check if valid piece for current player

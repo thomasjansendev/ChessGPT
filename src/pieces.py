@@ -15,18 +15,15 @@ class Piece:
             if self in board[i]:
                 return (i, board[i].index(self))
 
-    #TODO: remove the need to input the pieces dictionary in get moves methods since it is not needed <- it is only needed for the king
-    # Calculate the possible moves for a piece irrespective of board state
-    def get_possible_moves(self, board: list, pieces: dict) -> list:
-        position = self.get_position(board)
-        possible_moves = move_search(board, position, self, filtered=False, format='-list')
-        return possible_moves
-    
-    # Filter possible moves to take into account board state
+    # Returns a list of square names that the piece can move to
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
         possible_moves = move_search(board, position, self, filtered=True, format='-list')
         return possible_moves
+    
+    # Returns a list of squares that are threatened by this piece
+    def get_attacking_squares(self,board,pieces) -> list:
+        return self.get_legal_moves(board,pieces)
 
     
 class Queen(Piece): # can move in any direction => 8 DOF
@@ -51,25 +48,24 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
             self.img = SPRITES_DICT["w_king"]
         elif colour == colour.BLACK:
             self.img = SPRITES_DICT["b_king"]
-        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
-        
-    #TODO in possible moves don't include spaces that are threatened by an enemy piece <= need a way to determine that
-    # option 1: calculate all the possible moves of enemy pieces then check if kings possible moves are part of that list
-    #           - need a reference to all active pieces of the opposite colour     
-    
-    def get_possible_moves(self, board: list, pieces: dict) -> list:
-        return super().get_possible_moves(board, pieces)
+        self.rect = self.img.get_rect(topleft=(rect.x, rect.y))    
     
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
+        
         possible_moves = move_search(board, position, self, filtered=True, format='-list')
-        enemy_moves = get_possible_moves_enemy(board,pieces,self.colour)
+        squares_under_threat = get_squares_under_threat(board,pieces,self.colour)
+        
         legal_moves = []
         for move in possible_moves:
-            if move not in enemy_moves:
+            if move not in squares_under_threat:
                 legal_moves.append(move)
         return legal_moves
         
+    def get_attacking_squares(self, board: list, pieces: dict) -> list:
+        position = self.get_position(board)
+        possible_moves = move_search(board, position, self, filtered=False, format='-list')
+        return possible_moves
         
 class Knight(Piece): # can jump in L shape => 8 DOF
     def __init__(self, colour: colour, rect) -> None:
@@ -82,7 +78,7 @@ class Knight(Piece): # can jump in L shape => 8 DOF
             self.img = SPRITES_DICT["b_knight"]
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
-    def get_possible_moves(self,board,pieces) -> list:
+    def get_legal_moves(self,board,pieces) -> list:
         possible_moves = []
         position = self.get_position(board)
         for move in self.moveset:
@@ -97,8 +93,8 @@ class Knight(Piece): # can jump in L shape => 8 DOF
                     possible_moves.append(idx_to_name(new_move))   
         return possible_moves
     
-    def get_legal_moves(self, board: list, pieces: dict):
-        return self.get_possible_moves(board,pieces)
+    def get_attacking_squares(self, board: list, pieces: dict):
+        return self.get_legal_moves(board,pieces)
 
 
 class Bishop(Piece): # can move diagonally => 4 DOF
@@ -141,39 +137,17 @@ class Pawn(Piece): # 1.5 DOF
             raise Exception("colour value should be WHITE or BLACK")
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
-    def get_possible_moves(self, board: list, pieces: dict) -> list:
-        #TODO: move diagonally one if it is capturing a piece
-        #TODO: en-passant
-        position = self.get_position(board)
-        self.movedepth = 2 if position[0] == self.starting_row else 1
-        
-        possible_moves_list = []
-        possible_moves_dict = move_search(board,position,self,filtered=False,format='-dict')
-        
-        # Add vertical squares to possible moves
-        vertical_moves = possible_moves_dict[self.moveset[0]]
-        possible_moves_list += vertical_moves
-        
-        # Only include first square in diagonals
-        diagonals = [1,2] # <- corresponds to indices in self.moveset that are diagonals (e.g. index 1 = 'NE' for white, 'SE' for black)
-        for i in diagonals:
-            diagonal_moves = possible_moves_dict[self.moveset[i]]
-            if len(diagonal_moves) != 0:
-                possible_moves_list.append(diagonal_moves[0])
-        
-        return possible_moves_list
-    
     def get_legal_moves(self, board: list, pieces: dict):
+        #TODO: add en-passant
         position = self.get_position(board)
         self.movedepth = 2 if position[0] == self.starting_row else 1
         
-        possible_moves_list = []
         possible_moves_dict = move_search(board,position,self,filtered=True,format='-dict')
         
+        possible_moves_list = []
         # Add vertical squares to possible moves
         vertical_moves = possible_moves_dict[self.moveset[0]]
         possible_moves_list += vertical_moves
-        
         # Add diagonal movement ONLY if square is occupied by enemy
         diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]]
         for move in diagonal_moves:
@@ -182,8 +156,15 @@ class Pawn(Piece): # 1.5 DOF
                 possible_moves_list.append(move)
         
         return possible_moves_list
+    
+    def get_attacking_squares(self, board: list, pieces: dict) -> list:
+        position = self.get_position(board)
+        self.movedepth = 1 # because pawns only threaten the first diagonal squares
         
+        possible_moves_dict = move_search(board,position,self,filtered=False,format='-dict')
         
+        diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]] 
+        return diagonal_moves
         
 
 def move_search(board: list, origin: tuple, piece: Piece, filtered: bool=False, format: str='-list'):
@@ -247,7 +228,7 @@ def capture_piece(piece,piece_dict):
         piece_dict["captured_black"].append(piece)     
     return piece_dict
 
-def get_possible_moves_enemy(board: list, pieces: dict, piece_colour: colour):
+def get_squares_under_threat(board: list, pieces: dict, piece_colour: colour):
     # Used by king to identify squares it shouldn't move to
     
     if piece_colour == colour.WHITE:
@@ -257,10 +238,7 @@ def get_possible_moves_enemy(board: list, pieces: dict, piece_colour: colour):
             
     possible_moves = []
     for piece in enemy_pieces:
-        if type(piece) == King:
-            possible_moves += piece.get_possible_moves(board,pieces)
-        else:
-            possible_moves += piece.get_legal_moves(board,pieces)
-        
+        possible_moves += piece.get_attacking_squares(board,pieces)
+
     return list(set(possible_moves)) #convert to set to remove duplicate values
     

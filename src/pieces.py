@@ -15,6 +15,7 @@ class Piece:
             if self in board[i]:
                 return (i, board[i].index(self))
 
+    #TODO: remove the need to input the pieces dictionary in get moves methods since it is not needed <- it is only needed for the king
     # Calculate the possible moves for a piece irrespective of board state
     def get_possible_moves(self, board: list, pieces: dict) -> list:
         position = self.get_position(board)
@@ -60,16 +61,13 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         return super().get_possible_moves(board, pieces)
     
     def get_legal_moves(self, board: list, pieces: dict):
-        possible_moves = super().get_possible_moves(board,pieces)
-        
-        return super().get_legal_moves(board, pieces)
-        # possible_moves = super().get_possible_moves(board,pieces)
-        # enemy_moves = get_possible_moves_enemy(board,pieces,self.colour)
-        # filtered_possible_moves = []
-        # for move in possible_moves:
-        #     if move not in enemy_moves:
-        #         filtered_possible_moves.append(move)
-        # return filtered_possible_moves
+        possible_moves = self.get_possible_moves(board,pieces)
+        enemy_moves = get_possible_moves_enemy(board,pieces,self.colour)
+        legal_moves = []
+        for move in possible_moves:
+            if move not in enemy_moves:
+                legal_moves.append(move)
+        return legal_moves
         
         
 class Knight(Piece): # can jump in L shape => 8 DOF
@@ -159,7 +157,8 @@ class Pawn(Piece): # 1.5 DOF
         diagonals = [1,2] # <- corresponds to indices in self.moveset that are diagonals (e.g. index 1 = 'NE' for white, 'SE' for black)
         for i in diagonals:
             diagonal_moves = possible_moves_dict[self.moveset[i]]
-            possible_moves_list.append(diagonal_moves[0])
+            if len(diagonal_moves) != 0:
+                possible_moves_list.append(diagonal_moves[0])
         
         return possible_moves_list
     
@@ -257,9 +256,6 @@ def get_possible_moves_enemy(board: list, pieces: dict, piece_colour: colour):
             
     all_possible_moves = []
     for piece in enemy_pieces:
-        if type(piece) == King:
-            continue
-        #TODO: fix infinite recursion when enemy king is inccluded
         possible_moves = piece.get_possible_moves(board,pieces)
         all_possible_moves += possible_moves
         

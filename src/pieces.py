@@ -143,13 +143,23 @@ class Pawn(Piece): # 1.5 DOF
         self.movedepth = 2 if position[0] == self.starting_row else 1
         
         possible_moves_dict = move_search(board,position,self,filtered=True,format='-dict')
-        
         possible_moves_list = []
-        # Add vertical squares to possible moves
+        
+        # Add vertical squares to possible moves if square is empty
         vertical_moves = possible_moves_dict[self.moveset[0]]
-        possible_moves_list += vertical_moves
-        # Add diagonal movement ONLY if square is occupied by enemy
-        diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]]
+        for move in vertical_moves:
+            content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
+            if content == None:
+                possible_moves_list.append(move)
+        
+        # Get the first square of each diagonal <- needed when pawn is on starting rank and has a movedepth of 2
+        diagonal_moves = []
+        for i in [1,2]: # <- these correspond to the indices of the diagonals in self.moveset
+            diagonal_squares = possible_moves_dict[self.moveset[i]]
+            if len(diagonal_squares) != 0:
+                diagonal_moves.append(diagonal_squares[0])
+            
+        # Add square of each diagonal ONLY if square is occupied by enemy        
         for move in diagonal_moves:
             content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
             if content != None and content.colour != self.colour:

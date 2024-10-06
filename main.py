@@ -17,7 +17,7 @@ def main():
     
     # Chess Initialization
     board, pieces = init_pieces(init_board_dict())
-    current_player = Color.WHITE
+    current_player = colour.WHITE
     
     # Game state variables
     dragging = False
@@ -36,14 +36,13 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for square in board:
                     square_dict = board[square]
-                    if square_dict["piece"] != None and square_dict["piece"].color == current_player and square_dict["piece"].rect.collidepoint(event.pos):
+                    if square_dict["piece"] != None and square_dict["piece"].colour == current_player and square_dict["piece"].rect.collidepoint(event.pos):
                         dragging = True
                         grabbed_piece = square_dict["piece"]
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
                         
                         
-                        possible_moves = grabbed_piece.get_possible_moves(board_dict_to_array(board), pieces)
-                        # possible_moves = grabbed_piece.get_legal_moves(board_dict_to_array(board),possible_moves)
+                        possible_moves = grabbed_piece.get_legal_moves(board_dict_to_array(board), pieces)
                         
                         print(possible_moves)
                         square_of_origin = square_dict #used to return piece to square in case move is invalid 
@@ -63,7 +62,7 @@ def main():
                     if square_rect.collidepoint(event.pos):
                         if square in possible_moves:
                             #check if an enemy piece is on the square and capture it  
-                            if square_content != None and square_content.color != grabbed_piece.color: #capture piece of opposite colour
+                            if square_content != None and square_content.colour != grabbed_piece.colour: #capture piece of opposite colour
                                 pieces = capture_piece(square_content,pieces)
                             grabbed_piece.rect.center = square_rect.center
                             board[square]["piece"] = grabbed_piece #add piece to square onl

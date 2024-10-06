@@ -16,8 +16,8 @@ def new_move(board,current_player):
     #check if valid piece for current player
     if piece == None:
         raise Exception("No piece available to move at this location.")
-    if piece.color != current_player:
-        raise Exception("Please chose a piece of your own color")
+    if piece.colour != current_player:
+        raise Exception("Please chose a piece of your own colour")
     
     #debug info
     print(f"Selected: {piece}")

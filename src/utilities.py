@@ -45,9 +45,9 @@ def print_gamelog(gamelog) -> None:
 def update_gamelog(gamelog: dict, turn_number: int, piece, square: str) -> dict:
     if piece.id == 'p': id = ''
     else: id = piece.id
-    if piece.color == Color.WHITE:
+    if piece.colour == colour.WHITE:
         gamelog[turn_number] = f"{id}{square}"
-    elif piece.color == Color.BLACK:
+    elif piece.colour == colour.BLACK:
         gamelog[turn_number] += f" {id}{square}"
         turn_number += 1
     return gamelog, turn_number
@@ -66,11 +66,11 @@ def board_dict_to_array(board: dict) -> list:
     
     return board_array
 
-def change_current_player(current_player) -> Color:
-    if current_player == Color.WHITE:
-        return Color.BLACK
-    elif current_player == Color.BLACK:
-        return Color.WHITE
+def change_current_player(current_player) -> colour:
+    if current_player == colour.WHITE:
+        return colour.BLACK
+    elif current_player == colour.BLACK:
+        return colour.WHITE
     
 def clear(): #clears the console line
     # for windows
@@ -79,4 +79,12 @@ def clear(): #clears the console line
     # for mac and linux(here, os.name is 'posix')
     else:
         _ = system('clear')
+        
+def move_dict_to_list(move_dict) -> list:
+    # Concatenates the list stored in each key of a dictionary
+    # Used to convert output of the move_search function from a dictionary to a list
+    moves = []
+    for direction in move_dict:
+        moves += move_dict[direction]
+    return moves
     

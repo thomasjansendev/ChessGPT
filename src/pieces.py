@@ -26,7 +26,7 @@ class Piece:
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
         possible_moves = move_search(board, position, self, filtered=True, format='-list')
-        return possible_moves      
+        return possible_moves
 
     
 class Queen(Piece): # can move in any direction => 8 DOF
@@ -141,35 +141,29 @@ class Pawn(Piece): # 1.5 DOF
         #TODO: move diagonally one if it is capturing a piece
         #TODO: en-passant
         position = self.get_position(board)
-        if position[0] == self.starting_row: 
-            self.movedepth = 2 #can move up-two if on starting position
-        else:  
-            self.movedepth = 1 #move up one
+        self.movedepth = 2 if position[0] == self.starting_row else 1
+        possible_moves = move_search(board,position,self,filtered=False,format='-list')
+        return possible_moves
+    
+    def get_legal_moves(self, board: list, pieces: dict):
+        position = self.get_position(board)
+        self.movedepth = 2 if position[0] == self.starting_row else 1
+        possible_moves_dict = move_search(board,position,self,filtered=True,format='-dict')
         
         possible_moves = []
-        possible_moves_dict = move_search(board,position,self,filtered=False,format='-dict')
-        
-        #TODO: since the move depth of pawns is just one we can remove the for loop and
-        #filter moves on vertical 'N' or 'S'
-        for move in possible_moves_dict[self.moveset[0]]: 
-            content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
-            if content == None:
-                possible_moves.append(move)
-        #filter moves on first diagonal 'NE' or 'SE'
-        for move in possible_moves_dict[self.moveset[1]]:
-            content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
-            if content != None and content.colour != self.colour:
-                possible_moves.append(move)
-        #filter moves on second diagonal 'NO' or 'SO'
-        for move in possible_moves_dict[self.moveset[2]]:
+        # Add vertical squares to possible moves
+        vertical_moves = possible_moves_dict[self.moveset[0]]
+        possible_moves += vertical_moves
+        # Add diagonal movement only if square is occupied by enemy
+        diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]]
+        for move in diagonal_moves:
             content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
             if content != None and content.colour != self.colour:
                 possible_moves.append(move)
         
         return possible_moves
-    
-    def get_legal_moves(self, board: list, pieces: dict):
-        return self.get_possible_moves(board, pieces)
+        
+        
         
 
 def move_search(board: list, origin: tuple, piece: Piece, filtered: bool=False, format: str='-list'):

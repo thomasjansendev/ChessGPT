@@ -142,26 +142,37 @@ class Pawn(Piece): # 1.5 DOF
         #TODO: en-passant
         position = self.get_position(board)
         self.movedepth = 2 if position[0] == self.starting_row else 1
-        possible_moves = move_search(board,position,self,filtered=False,format='-list')
-        return possible_moves
+        possible_moves_dict = move_search(board,position,self,filtered=False,format='-dict')
+        
+        possible_moves_list = []
+        # Add vertical squares to possible moves
+        vertical_moves = possible_moves_dict[self.moveset[0]]
+        possible_moves_list += vertical_moves
+        # Only include first square in diagonals
+        diagonals = [1,2] # <- corresponds to indices in self.moveset that are diagonals (e.g. index 1 = 'NE' for white, 'SE' for black)
+        for i in diagonals:
+            diagonal_moves = possible_moves_dict[self.moveset[i]]
+            possible_moves_list.append(diagonal_moves[0])
+        
+        return possible_moves_list
     
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
         self.movedepth = 2 if position[0] == self.starting_row else 1
         possible_moves_dict = move_search(board,position,self,filtered=True,format='-dict')
         
-        possible_moves = []
+        possible_moves_list = []
         # Add vertical squares to possible moves
         vertical_moves = possible_moves_dict[self.moveset[0]]
-        possible_moves += vertical_moves
+        possible_moves_list += vertical_moves
         # Add diagonal movement only if square is occupied by enemy
         diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]]
         for move in diagonal_moves:
             content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
             if content != None and content.colour != self.colour:
-                possible_moves.append(move)
+                possible_moves_list.append(move)
         
-        return possible_moves
+        return possible_moves_list
         
         
         

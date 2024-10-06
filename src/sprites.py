@@ -3,7 +3,8 @@ import pygame
 from src.constants import *
 
 def load_sprites() -> dict: #returns a dictionary of filepaths
-    #Initialize dictionary to store filepaths to sprites
+    # Initialize dictionary to store filepaths to sprites
+    # The name of each key needs to appear in the title of the corresponding file
     sprites_dict = {
         "square_dark": "",
         "square_light": "",
@@ -25,8 +26,10 @@ def load_sprites() -> dict: #returns a dictionary of filepaths
     project_dir = os.getcwd()
     print(f"Current working directory: {project_dir}")
     
-    #Set the directory path containing the sprites and get the filenames of all files in that dir
+    # Set the directory path containing the sprites
     sprites_dir = os.path.join('.','sprites','png')
+    
+    # Get the filenames of all files in that dir
     try:
         _, _, sprites_filenames = next(os.walk(sprites_dir))
     except StopIteration:

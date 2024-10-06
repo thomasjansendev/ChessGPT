@@ -15,7 +15,7 @@ class Piece:
             if self in board[i]:
                 return (i, board[i].index(self))
 
-    # Returns a list of square names that the piece can move to
+    # Returns a list of square names that the piece can legally move to
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
         possible_moves = move_search(board, position, self, filtered=True, format='-list')
@@ -227,16 +227,6 @@ def move_search(board: list, origin: tuple, piece: Piece, filtered: bool=False, 
         return move_dict_to_list(moves_dict)
     else:
         raise Exception("move_search: 'format' argument is invalid. Should either be '-dict' or '-list'")
-
-
-def capture_piece(piece,piece_dict):
-    if piece.colour == colour.WHITE:
-        piece_dict["active_white"].remove(piece)
-        piece_dict["captured_white"].append(piece)
-    elif piece.colour == colour.BLACK:
-        piece_dict["active_black"].remove(piece)
-        piece_dict["captured_black"].append(piece)     
-    return piece_dict
 
 def get_squares_under_threat(board: list, pieces: dict, piece_colour: colour):
     # Used by king to identify squares it shouldn't move to

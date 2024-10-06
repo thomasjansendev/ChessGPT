@@ -5,12 +5,7 @@ from src.constants import *
 # ======= UTILITY FUNCTIONS =======
 
 def name_to_idx(pos_str: str) -> tuple: #converts a chess board location into an an array index location (e.g. "a8" -> (0,0))
-    #TODO (later): cache indicies into a dict during initialization 
-    #to avoid searching for index each time
-    for i in range(0,len(BOARD_REF)):
-        if pos_str in BOARD_REF[i]:
-            index = (i, BOARD_REF[i].index(pos_str))
-            return index
+    return BOARD_REF_DICT[pos_str]
 
 def idx_to_name(pos_idx: tuple) -> str: #converts an array index location to a chess board location (e.g. (0,0) -> "a8")
     return BOARD_REF[pos_idx[0]][pos_idx[1]]
@@ -87,4 +82,12 @@ def move_dict_to_list(move_dict) -> list:
     for direction in move_dict:
         moves += move_dict[direction]
     return moves
-    
+
+def capture_piece(piece,piece_dict):
+    if piece.colour == colour.WHITE:
+        piece_dict["active_white"].remove(piece)
+        piece_dict["captured_white"].append(piece)
+    elif piece.colour == colour.BLACK:
+        piece_dict["active_black"].remove(piece)
+        piece_dict["captured_black"].append(piece)     
+    return piece_dict

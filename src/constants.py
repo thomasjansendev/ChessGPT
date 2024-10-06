@@ -8,6 +8,15 @@ CELL_WIDTH, CELL_HEIGHT = SPRITE_WIDTH, SPRITE_HEIGHT
 from enum import Enum
 colour = Enum('colour', ['WHITE', 'BLACK'])
 
+ARRAY_CARDINALS = { "N":  (-1,0),
+                    "NE": (-1,1),
+                    "E":  (0,1),
+                    "SE": (1,1),
+                    "S":  (1,0),
+                    "SO": (1,-1),
+                    "O":  (0,-1),
+                    "NO": (-1,-1) }
+
 BOARD_REF = [["a8","b8","c8","d8","e8","f8","g8","h8"],
              ["a7","b7","c7","d7","e7","f7","g7","h7"],
              ["a6","b6","c6","d6","e6","f6","g6","h6"],
@@ -17,11 +26,14 @@ BOARD_REF = [["a8","b8","c8","d8","e8","f8","g8","h8"],
              ["a2","b2","c2","d2","e2","f2","g2","h2"],
              ["a1","b1","c1","d1","e1","f1","g1","h1"]]
 
-ARRAY_CARDINALS = { "N":  (-1,0),
-                    "NE": (-1,1),
-                    "E":  (0,1),
-                    "SE": (1,1),
-                    "S":  (1,0),
-                    "SO": (1,-1),
-                    "O":  (0,-1),
-                    "NO": (-1,-1) }
+# BOARD_REF_DICT is used to efficiently get index locations from a square name
+# key: 'square_name'
+# value: tupple -> index location of a square in a board_array
+# It results in a dictionary = {'a8': (0,0), ..., 'h1': (7,7)}
+BOARD_REF_DICT = {}
+for row in range(0,len(BOARD_REF)):
+    for col in range(0,len(BOARD_REF[row])):
+        square_name = BOARD_REF[row][col]
+        BOARD_REF_DICT[square_name] = (row,col)
+
+        

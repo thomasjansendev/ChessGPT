@@ -16,7 +16,6 @@ class Piece:
                 return (i, board[i].index(self))
 
     # Calculate the possible moves for a piece irrespective of board state
-    # idea: add filter parameter to determine whether user wants to filter or not
     def get_possible_moves(self, board: list, pieces: dict) -> list:
         position = self.get_position(board)
         possible_moves = move_search(board, position, self, filtered=False, format='-list')
@@ -58,13 +57,19 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
     #           - need a reference to all active pieces of the opposite colour     
     
     def get_possible_moves(self, board: list, pieces: dict) -> list:
+        return super().get_possible_moves(board, pieces)
+    
+    def get_legal_moves(self, board: list, pieces: dict):
         possible_moves = super().get_possible_moves(board,pieces)
-        enemy_moves = get_possible_moves_enemy(board,pieces,self.colour)
-        filtered_possible_moves = []
-        for move in possible_moves:
-            if move not in enemy_moves:
-                filtered_possible_moves.append(move)
-        return filtered_possible_moves
+        
+        return super().get_legal_moves(board, pieces)
+        # possible_moves = super().get_possible_moves(board,pieces)
+        # enemy_moves = get_possible_moves_enemy(board,pieces,self.colour)
+        # filtered_possible_moves = []
+        # for move in possible_moves:
+        #     if move not in enemy_moves:
+        #         filtered_possible_moves.append(move)
+        # return filtered_possible_moves
         
         
 class Knight(Piece): # can jump in L shape => 8 DOF
@@ -142,12 +147,14 @@ class Pawn(Piece): # 1.5 DOF
         #TODO: en-passant
         position = self.get_position(board)
         self.movedepth = 2 if position[0] == self.starting_row else 1
-        possible_moves_dict = move_search(board,position,self,filtered=False,format='-dict')
         
         possible_moves_list = []
+        possible_moves_dict = move_search(board,position,self,filtered=False,format='-dict')
+        
         # Add vertical squares to possible moves
         vertical_moves = possible_moves_dict[self.moveset[0]]
         possible_moves_list += vertical_moves
+        
         # Only include first square in diagonals
         diagonals = [1,2] # <- corresponds to indices in self.moveset that are diagonals (e.g. index 1 = 'NE' for white, 'SE' for black)
         for i in diagonals:
@@ -159,13 +166,15 @@ class Pawn(Piece): # 1.5 DOF
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
         self.movedepth = 2 if position[0] == self.starting_row else 1
-        possible_moves_dict = move_search(board,position,self,filtered=True,format='-dict')
         
         possible_moves_list = []
+        possible_moves_dict = move_search(board,position,self,filtered=True,format='-dict')
+        
         # Add vertical squares to possible moves
         vertical_moves = possible_moves_dict[self.moveset[0]]
         possible_moves_list += vertical_moves
-        # Add diagonal movement only if square is occupied by enemy
+        
+        # Add diagonal movement ONLY if square is occupied by enemy
         diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]]
         for move in diagonal_moves:
             content = board[name_to_idx(move)[0]][name_to_idx(move)[1]]
@@ -199,23 +208,25 @@ def move_search(board: list, origin: tuple, piece: Piece, filtered: bool=False, 
             search_pos = ( origin[0] + i * ARRAY_CARDINALS[direction][0],
                            origin[1] + i * ARRAY_CARDINALS[direction][1]) 
             
-            # Check if position is within boundaries of BOARD_REF
-            if 0 <= search_pos[0] < len(BOARD_REF) and 0 <= search_pos[1] < len(BOARD_REF): 
-                # Convert array position to square name (e.g. 'a1', 'g8')
-                square = BOARD_REF[search_pos[0]][search_pos[1]]
+            # Skip current search position if NOT within boundaries of BOARD_REF
+            if search_pos[0] < 0 or search_pos[0] >= len(board) or search_pos[1] < 0 or search_pos[1] >= len(board):
+                continue
 
-                if filtered:
-                    # Check content of current square in search
-                    content = board[search_pos[0]][search_pos[1]]
-                    # Stop search in this direction if ENEMY piece is hit and append square to move_dict
-                    if content != None and content.colour != colour:
-                        moves_dict[direction].append(square)
-                        break
-                    # Stop search in this direction if FIRENDLY piece is hit but DO NOT append square to move_dict
-                    elif content != None and content.colour == colour:
-                        break
-                    
-                moves_dict[direction].append(square)
+            # Convert array position to square name (e.g. 'a1', 'g8')
+            square = BOARD_REF[search_pos[0]][search_pos[1]]
+
+            if filtered:
+                # Check content of current square in search
+                content = board[search_pos[0]][search_pos[1]]
+                # Stop search in this direction if ENEMY piece is hit and append square to move_dict
+                if content != None and content.colour != colour:
+                    moves_dict[direction].append(square)
+                    break
+                # Stop search in this direction if FIRENDLY piece is hit but DO NOT append square to move_dict
+                elif content != None and content.colour == colour:
+                    break
+                
+            moves_dict[direction].append(square)
     
     # Return dictionary if specified
     if format == '-dict':

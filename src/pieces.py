@@ -23,7 +23,9 @@ class Piece:
     
     # Returns a list of squares that are threatened by this piece
     def get_attacking_squares(self,board,pieces) -> list:
-        return self.get_legal_moves(board,pieces)
+        position = self.get_position(board)
+        possible_moves = move_search(board, position, self, mode='-attacking', format='-list')
+        return possible_moves
 
     
 class Queen(Piece): # can move in any direction => 8 DOF
@@ -207,17 +209,25 @@ def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', fo
                 continue
 
             # Convert array position to square name (e.g. 'a1', 'g8')
-            square = BOARD_REF[search_pos[0]][search_pos[1]]
+            square = idx_to_name(search_pos)
+            # Check content of current square in search
+            content = board[search_pos[0]][search_pos[1]]
 
+            # When user wants to return the legal moves of piece
             if mode == '-legal':
-                # Check content of current square in search
-                content = board[search_pos[0]][search_pos[1]]
                 # Stop search in this direction if ENEMY piece is hit and append square to move_dict
                 if content != None and content.colour != colour:
                     moves_dict[direction].append(square)
                     break
                 # Stop search in this direction if FIRENDLY piece is hit but DO NOT append square to move_dict
                 elif content != None and content.colour == colour:
+                    break
+            
+            # When user wants to return the squares that are threatened by piece
+            if mode == '-attacking':
+                # Stop search in this direction if piece is hit and append square to move_dict
+                if content != None and type(content) != King:
+                    moves_dict[direction].append(square)
                     break
                 
             moves_dict[direction].append(square)

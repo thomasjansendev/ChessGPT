@@ -18,7 +18,7 @@ class Piece:
     # Returns a list of square names that the piece can legally move to
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
-        possible_moves = move_search(board, position, self, filtered=True, format='-list')
+        possible_moves = move_search(board, position, self, mode='-legal', format='-list')
         return possible_moves
     
     # Returns a list of squares that are threatened by this piece
@@ -53,7 +53,7 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
     def get_legal_moves(self, board: list, pieces: dict):
         position = self.get_position(board)
         
-        possible_moves = move_search(board, position, self, filtered=True, format='-list')
+        possible_moves = move_search(board, position, self, mode='-legal', format='-list')
         squares_under_threat = get_squares_under_threat(board,pieces,self.colour)
         
         legal_moves = []
@@ -64,7 +64,7 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         
     def get_attacking_squares(self, board: list, pieces: dict) -> list:
         position = self.get_position(board)
-        possible_moves = move_search(board, position, self, filtered=False, format='-list')
+        possible_moves = move_search(board, position, self, mode='-attacking', format='-list')
         return possible_moves
         
 class Knight(Piece): # can jump in L shape => 8 DOF
@@ -142,7 +142,7 @@ class Pawn(Piece): # 1.5 DOF
         position = self.get_position(board)
         self.movedepth = 2 if position[0] == self.starting_row else 1
         
-        possible_moves_dict = move_search(board,position,self,filtered=True,format='-dict')
+        possible_moves_dict = move_search(board,position,self,mode='-legal',format='-dict')
         possible_moves_list = []
         
         # Add vertical squares to possible moves if square is empty
@@ -171,13 +171,16 @@ class Pawn(Piece): # 1.5 DOF
         position = self.get_position(board)
         self.movedepth = 1 # because pawns only threaten the first diagonal squares
         
-        possible_moves_dict = move_search(board,position,self,filtered=False,format='-dict')
+        possible_moves_dict = move_search(board,position,self,mode='-attacking',format='-dict')
         
         diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]] 
         return diagonal_moves
         
 
-def move_search(board: list, origin: tuple, piece: Piece, filtered: bool=False, format: str='-list'):
+def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', format: str='-list'):
+    # mode = '-legal' returns legal moves for piece
+    # mode = '-attacking' returns squares that are threatened by piece
+    
     # Get parameters from piece object
     moveset = piece.moveset
     depth = piece.movedepth
@@ -206,7 +209,7 @@ def move_search(board: list, origin: tuple, piece: Piece, filtered: bool=False, 
             # Convert array position to square name (e.g. 'a1', 'g8')
             square = BOARD_REF[search_pos[0]][search_pos[1]]
 
-            if filtered:
+            if mode == '-legal':
                 # Check content of current square in search
                 content = board[search_pos[0]][search_pos[1]]
                 # Stop search in this direction if ENEMY piece is hit and append square to move_dict

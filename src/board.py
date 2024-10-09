@@ -1,3 +1,20 @@
+class Board:
+    def __init__(self) -> None:
+        self.board = init_board_array()
+        self.active_colour = 'w'
+        self.castling_availability = {
+            "white_kingside": True,
+            "white_queenside": True,
+            "black_kingside": True,
+            "black_kingside": True
+        }
+        self.enpassant_target_square = '-' 
+        self.halfmove_clock = 0 #This is the number of halfmoves since the last capture or pawn move.
+        self.fullmove_number = 1
+
+
+###
+
 import pygame
 from src.sprites import SPRITES_DICT
 from src.utilities import *

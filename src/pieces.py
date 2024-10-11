@@ -31,11 +31,12 @@ class Piece:
 class Queen(Piece): # can move in any direction => 8 DOF
     def __init__(self, colour: colour, rect) -> None:
         super().__init__(colour)
-        self.id = "Q"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         if colour == colour.WHITE:
+            self.id = "Q"
             self.img = SPRITES_DICT["w_queen"]
         elif colour == colour.BLACK:
+            self.id = "q"
             self.img = SPRITES_DICT["b_queen"]
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
@@ -43,12 +44,13 @@ class Queen(Piece): # can move in any direction => 8 DOF
 class King(Piece): # can move to any adjacent square by 1 => 8 DOF
     def __init__(self, colour: colour, rect) -> None:
         super().__init__(colour)
-        self.id = "K"
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         self.movedepth = 1
         if colour == colour.WHITE:
+            self.id = "K"     
             self.img = SPRITES_DICT["w_king"]
         elif colour == colour.BLACK:
+            self.id = "k"
             self.img = SPRITES_DICT["b_king"]
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))    
     
@@ -72,11 +74,12 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
 class Knight(Piece): # can jump in L shape => 8 DOF
     def __init__(self, colour: colour, rect) -> None:
         super().__init__(colour)
-        self.id = "N"
         self.moveset = [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
         if colour == colour.WHITE:
+            self.id = "N"
             self.img = SPRITES_DICT["w_knight"]
         elif colour == colour.BLACK:
+            self.id = "n"
             self.img = SPRITES_DICT["b_knight"]
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
@@ -102,11 +105,12 @@ class Knight(Piece): # can jump in L shape => 8 DOF
 class Bishop(Piece): # can move diagonally => 4 DOF
     def __init__(self, colour: colour, rect) -> None:
         super().__init__(colour)
-        self.id = "B"
         self.moveset = ["NE","SE","SO","NO"]
         if colour == colour.WHITE:
+            self.id = "B"
             self.img = SPRITES_DICT["w_bishop"]
         elif colour == colour.BLACK:
+            self.id = "b"
             self.img = SPRITES_DICT["b_bishop"]
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
@@ -114,11 +118,12 @@ class Bishop(Piece): # can move diagonally => 4 DOF
 class Rook(Piece): # can move horizontally and vertically => 4 DOF
     def __init__(self, colour: colour, rect) -> None:
         super().__init__(colour)
-        self.id = "R"
         self.moveset = ["N","E","S","O"]
         if colour == colour.WHITE:
+            self.id = "R"
             self.img = SPRITES_DICT["w_rook"]
         elif colour == colour.BLACK:
+            self.id = "r"
             self.img = SPRITES_DICT["b_rook"]
         self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
@@ -126,12 +131,13 @@ class Rook(Piece): # can move horizontally and vertically => 4 DOF
 class Pawn(Piece): # 1.5 DOF
     def __init__(self, colour: colour, rect) -> None:
         super().__init__(colour)
-        self.id = "p"
         if colour == colour.WHITE:
+            self.id = "P"
             self.moveset = ["N","NE","NO"]
             self.starting_row = 6
             self.img = SPRITES_DICT["w_pawn"]
         elif colour == colour.BLACK:
+            self.id = "p"
             self.moveset = ["S","SE","SO"]
             self.starting_row = 1
             self.img = SPRITES_DICT["b_pawn"]

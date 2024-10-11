@@ -1,20 +1,3 @@
-class Board:
-    def __init__(self) -> None:
-        self.board = init_board_array()
-        self.active_colour = 'w'
-        self.castling_availability = {
-            "white_kingside": True,
-            "white_queenside": True,
-            "black_kingside": True,
-            "black_kingside": True
-        }
-        self.enpassant_target_square = '-' 
-        self.halfmove_clock = 0 #This is the number of halfmoves since the last capture or pawn move.
-        self.fullmove_number = 1
-
-
-###
-
 import pygame
 from src.sprites import SPRITES_DICT
 from src.utilities import *
@@ -133,6 +116,65 @@ def set_piece(new_piece: Piece, colour: colour, square: str, board_dict: dict, p
     elif colour == colour.BLACK:
         pieces_dict["active_black"].append(new_piece)
     return board_dict, pieces_dict
-    
-    
+
+#######
+
+class Board:
+    def __init__(self) -> None:
+        self.sprites = {} #TODO: use this to store {'square': {'img': _}, {'rect': _} } to draw the GUI
+        self.array = board_dict_to_array(init_pieces(init_board_dict())[0]) # <- TODO: fix this mess (remove rect from Piece __init__ and set it in a seperate function call)
+        self.active_colour = 'w'
+        self.castling_availability = {
+            "white_kingside": True,
+            "white_queenside": True,
+            "black_kingside": True,
+            "black_queenside": True
+        }
+        self.enpassant_target_square = '-' 
+        self.halfmove_clock = 0 #This is the number of halfmoves since the last capture or pawn move.
+        self.fullmove_number = 1
         
+    def update(self,move:str):
+        # Assuming move is given in UCI format 'e2e4' -> TODO: implement exceptions and parsing later
+        origin_square = move[:2]
+        origin_square_idx = name_to_idx(origin_square)
+        destination_square = move[2:4]
+        destination_square_idx = name_to_idx(destination_square)
+        promotion = move[4] if len(move) == 5 else None
+        
+        piece = self.array[origin_square_idx[0]][origin_square_idx[1]]
+        if piece != None:
+            legal_moves = piece.get_legal_moves(self.array, pieces={})
+        else:
+            legal_moves = None
+
+        if destination_square in legal_moves:
+            #update board
+            self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
+            self.array[origin_square_idx[0]][origin_square_idx[1]] = None
+        else:
+            raise Exception("Illegal move. Please try again.")
+            
+    def draw():
+        pass
+        
+    def print(self,mode="-clean"):
+        board = self.array
+        if mode == '-clean':
+            for row in board:
+                row = list(map(lambda x: x.id if issubclass(type(x), Piece) else x, row))
+                row = list(map(lambda x: ' ' if x == None else x, row))
+                print(row)
+        elif mode == "-FEN":
+            pass
+        elif mode == "-raw":
+            for row in board: print(row)
+        else:
+            raise Exception("Board.print(): valid arguments for 'mode' are '-clean', '-FEN' or '-raw'.")
+
+    def get_active_pieces():
+        active_pieces = {
+            "w": [],
+            "b": []
+        }
+        return active_pieces 

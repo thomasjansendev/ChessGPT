@@ -10,16 +10,6 @@ def name_to_idx(pos_str: str) -> tuple: #converts a chess board location into an
 def idx_to_name(pos_idx: tuple) -> str: #converts an array index location to a chess board location (e.g. (0,0) -> "a8")
     return BOARD_REF[pos_idx[0]][pos_idx[1]]
 
-def print_board(board_array: list,mode="--clean"):
-    match mode:
-        case "--clean":
-            for row in board_array:
-                row = list(map(lambda x: x.id if issubclass(type(x), Piece) else x, row))
-                row = list(map(lambda x: ' ' if x == None else x, row))
-                print(row)
-        case "--raw":
-            for row in board_array: print(row)
-
 def mark_moves_on_board(board,moves:tuple):
     new_board = board.copy()
     for move in moves:

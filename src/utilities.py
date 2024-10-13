@@ -72,12 +72,3 @@ def move_dict_to_list(move_dict) -> list:
     for direction in move_dict:
         moves += move_dict[direction]
     return moves
-
-def capture_piece(piece,piece_dict):
-    if piece.colour == colour.WHITE:
-        piece_dict["active_white"].remove(piece)
-        piece_dict["captured_white"].append(piece)
-    elif piece.colour == colour.BLACK:
-        piece_dict["active_black"].remove(piece)
-        piece_dict["captured_black"].append(piece)     
-    return piece_dict

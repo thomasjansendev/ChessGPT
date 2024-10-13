@@ -4,38 +4,174 @@ from src.utilities import *
 from src.constants import *
 from src.pieces import *
 
-def init_board_array() -> list:
-    board = [[None for _ in range(8)] for _ in range(8)]
-    # Queen Q
-    board[name_to_idx("d8")[0]][name_to_idx("d8")[1]] = Queen(colour.BLACK)
-    board[name_to_idx("d1")[0]][name_to_idx("d1")[1]] = Queen(colour.WHITE)
-    # King K
-    board[name_to_idx("e8")[0]][name_to_idx("e8")[1]] = King(colour.BLACK)
-    board[name_to_idx("e1")[0]][name_to_idx("e1")[1]] = King(colour.WHITE)
-    # Knights N
-    board[name_to_idx("b8")[0]][name_to_idx("b8")[1]] = Knight(colour.BLACK)
-    board[name_to_idx("g8")[0]][name_to_idx("g8")[1]] = Knight(colour.BLACK)
-    board[name_to_idx("b1")[0]][name_to_idx("b1")[1]] = Knight(colour.WHITE)
-    board[name_to_idx("g1")[0]][name_to_idx("g1")[1]] = Knight(colour.WHITE)
-    # Bishop B
-    board[name_to_idx("c8")[0]][name_to_idx("c8")[1]] = Bishop(colour.BLACK)
-    board[name_to_idx("f8")[0]][name_to_idx("f8")[1]] = Bishop(colour.BLACK)
-    board[name_to_idx("c1")[0]][name_to_idx("c1")[1]] = Bishop(colour.WHITE)
-    board[name_to_idx("f1")[0]][name_to_idx("f1")[1]] = Bishop(colour.WHITE)
-    # Rook R
-    board[name_to_idx("a8")[0]][name_to_idx("a8")[1]] = Rook(colour.BLACK)
-    board[name_to_idx("h8")[0]][name_to_idx("h8")[1]] = Rook(colour.BLACK)
-    board[name_to_idx("a1")[0]][name_to_idx("a1")[1]] = Rook(colour.WHITE)
-    board[name_to_idx("h1")[0]][name_to_idx("h1")[1]] = Rook(colour.WHITE)
-    # Pawns p
-    board[1] = [Pawn(colour.BLACK) for _ in range(len(board[0]))]
-    board[6] = [Pawn(colour.WHITE) for _ in range(len(board[0]))]
-    return board
+class Board:
+    def __init__(self) -> None:
+        # Board state attributes
+        self.array = init_empty_board()
+        self.active_pieces = { "w": [], "b": []}
+        self.captured_pieces = { "w": [], "b": []}
+        fill_board(self)
+        # GUI attributes
+        self.sprites = {} #TODO: use this to store {'square': {'img': _}, {'rect': _} } to draw the GUI
+        # Games state attributes
+        self.active_colour = 'w'
+        self.castling_availability = {
+            "white_kingside": True,
+            "white_queenside": True,
+            "black_kingside": True,
+            "black_queenside": True
+        }
+        self.enpassant_target_square = '-' 
+        self.halfmove_clock = 0 # This is the number of halfmoves since the last capture or pawn move.
+        self.fullmove_number = 1
+        self.checkmate = False
+        self.gamelog = "" # To keep track of turns in PGN format
+        
+        
+    def update(self,move:str):
+        # Assuming move is given in UCI format 'e2e4' (long algebraic notation)
+        origin_square = move[:2]
+        origin_square_idx = name_to_idx(origin_square)
+        destination_square = move[2:4]
+        destination_square_idx = name_to_idx(destination_square)
+        
+        # Get list of legal moves if piece is available on selected square
+        piece = self.array[origin_square_idx[0]][origin_square_idx[1]]
+        if piece != None:
+            legal_moves = piece.get_legal_moves(self)
+        else:
+            raise Exception(f"No piece is available on {origin_square}.")
+        
+        destination_content = self.array[destination_square_idx[0]][destination_square_idx[1]]
+        if destination_square in legal_moves:
+            # Check special movement conditions (check, capture, castling, promotion)
+            if destination_content != None and destination_content.colour != piece.colour:
+                capture = True
+                self.capture_piece(destination_content)
+            else:
+                capture = False
+            check = verify_check()
+            castling = verify_castling()
+            promotion = move[4] if len(move) == 5 else ''
+            
+            # Update board state & gamelog
+            self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
+            self.array[origin_square_idx[0]][origin_square_idx[1]] = None
+            self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
+        else:
+            raise Exception(f"{move} is an illegal move. Please try again.")
+            
+    def draw():
+        pass
+        
+    def print(self,mode="-clean"):
+        board = self.array
+        if mode == '-clean':
+            for row in board:
+                row = list(map(lambda x: x.id if issubclass(type(x), Piece) else x, row))
+                row = list(map(lambda x: ' ' if x == None else x, row))
+                print(row)
+        elif mode == "-FEN":
+            pass
+        elif mode == "-raw":
+            for row in board: print(row)
+        else:
+            raise Exception("Board.print(): valid arguments for 'mode' are '-clean', '-FEN' or '-raw'.")
+    
+    def get_piece(self,square: str) -> Piece:
+        index = name_to_idx(square)
+        piece = self.array[index[0]][index[1]]
+        return piece
+    
+    def capture_piece(self,piece):
+        if piece.colour == colour.WHITE:
+            self.active_pieces["w"].remove(piece)
+            self.captured_pieces["w"].append(piece)
+        elif piece.colour == colour.BLACK:
+            self.active_pieces["b"].remove(piece)
+            self.captured_pieces["b"].append(piece)
+    
+    def update_gamelog(self, piece:Piece, origin_square:str, destination_square:str, capture:bool=False, check:bool=False, castling:str='', promotion:str=''):
+        
+        piece_str = piece.id.upper() if type(piece) != Pawn else ''
+        check_str = '+' if check == True else ''
+        
+        if capture and type(piece) != Pawn:
+            capture_str = 'x'
+        elif capture and type(piece) == Pawn:
+            capture_str = f'{origin_square[0]}x' #add column origin file if piece is a pawn
+        else:
+            capture_str = ''
+        
+        if castling == '':
+            move_str = f"{piece_str}{capture_str}{destination_square}{promotion}{check_str}"
+        elif castling == 'queenside':
+            move_str = "0-0-0"
+        elif castling == 'kingside':
+            move_str = "0-0"
+        
+        if self.active_colour == 'w':
+            self.gamelog += f'{self.fullmove_number}. {move_str} '
+        elif self.active_colour == 'b':
+            self.gamelog += f'{move_str} '
+         
+    
+# Helper functions
 
-def init_empty_board() -> list:
-    board = [[None for _ in range(8)] for _ in range(8)]
-    return board
+def verify_check():
+    return False
 
+def verify_castling():
+    return ''
+
+def init_empty_board():
+    return [[None for _ in range(8)] for _ in range(8)]
+
+def fill_board(board):
+    
+    # WHITE PIECES
+    set_piece(Rook, colour.WHITE, "a1", board)
+    set_piece(Knight, colour.WHITE, "b1", board)
+    set_piece(Bishop, colour.WHITE, "c1", board)
+    set_piece(Queen, colour.WHITE, "d1", board)
+    set_piece(King, colour.WHITE, "e1", board)
+    set_piece(Bishop, colour.WHITE, "f1", board)
+    set_piece(Knight, colour.WHITE, "g1", board)
+    set_piece(Rook, colour.WHITE, "h1", board)
+    
+    # WHITE PAWNS
+    white_pawn_squares = ["a2","b2","c2","d2","e2","f2","g2","h2"]
+    for square in white_pawn_squares:
+        set_piece(Pawn, colour.WHITE, square, board)
+    
+    # BLACK PIECES
+    set_piece(Rook, colour.BLACK, "a8", board)
+    set_piece(Knight, colour.BLACK, "b8", board)
+    set_piece(Bishop, colour.BLACK, "c8", board)
+    set_piece(Queen, colour.BLACK, "d8", board)
+    set_piece(King, colour.BLACK, "e8", board)
+    set_piece(Bishop, colour.BLACK, "f8", board)
+    set_piece(Knight, colour.BLACK, "g8", board)
+    set_piece(Rook, colour.BLACK, "h8", board)
+    
+    # BLACK PAWNS
+    black_pawn_squares = ["a7","b7","c7","d7","e7","f7","g7","h7"]
+    for square in black_pawn_squares:
+        set_piece(Pawn, colour.BLACK, square, board)
+
+def set_piece(piece_type: Piece, colour: colour, square: str, board: Board):
+    # Initialize new piece
+    new_piece = piece_type(colour)
+    # Update board with new piece at specified square
+    index_loc = name_to_idx(square)
+    board.array[index_loc[0]][index_loc[1]] = new_piece
+    # Update piece dictionary with new piece
+    if colour == colour.WHITE:
+        board.active_pieces["w"].append(new_piece)
+    elif colour == colour.BLACK:
+        board.active_pieces["b"].append(new_piece)
+    
+# TODO: refactor to create self.sprites dictionary instead {'square': {'img': _}, {'rect': _} } 
 def init_board_dict(): 
     # Returns a dictionary containing a key for each square on the board
     # Initiliazes an empty board -> set_pieces() is used to fill board with starting piece positions 
@@ -63,118 +199,3 @@ def init_board_dict():
             is_light = not is_light
             
     return board_dict
-
-def init_pieces(board_dict: dict):
-    # Fills the board dictionary with the pieces at their starting position
-    # & initializes a dictionary to keep track of the active/captured pieces
-    
-    pieces_dict = {
-        "active_white": [],
-        "active_black": [],
-        "captured_white": [],
-        "captured_black": []
-    }
-    
-    #WHITE PIECES
-    board_dict, pieces_dict = set_piece(Rook, colour.WHITE, "a1", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Knight, colour.WHITE, "b1", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Bishop, colour.WHITE, "c1", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Queen, colour.WHITE, "d1", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(King, colour.WHITE, "e1", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Bishop, colour.WHITE, "f1", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Knight, colour.WHITE, "g1", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Rook, colour.WHITE, "h1", board_dict, pieces_dict)
-    
-    #BLACK PIECES
-    board_dict, pieces_dict = set_piece(Rook, colour.BLACK, "a8", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Knight, colour.BLACK, "b8", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Bishop, colour.BLACK, "c8", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Queen, colour.BLACK, "d8", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(King, colour.BLACK, "e8", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Bishop, colour.BLACK, "f8", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Knight, colour.BLACK, "g8", board_dict, pieces_dict)
-    board_dict, pieces_dict = set_piece(Rook, colour.BLACK, "h8", board_dict, pieces_dict)
-    
-    #PAWNS
-    white_pawn_squares = ["a2","b2","c2","d2","e2","f2","g2","h2"]
-    for square in white_pawn_squares:
-        board_dict, pieces_dict = set_piece(Pawn, colour.WHITE, square, board_dict, pieces_dict)
-    black_pawn_squares = ["a7","b7","c7","d7","e7","f7","g7","h7"]
-    for square in black_pawn_squares:
-        board_dict, pieces_dict = set_piece(Pawn, colour.BLACK, square, board_dict, pieces_dict)
-    
-    return board_dict, pieces_dict
-
-def set_piece(new_piece: Piece, colour: colour, square: str, board_dict: dict, pieces_dict: dict):
-    # Initialize new piece
-    new_piece = new_piece(colour,board_dict[square]["rect"])
-    # Update board with new piece at specified square
-    board_dict[square]["piece"] = new_piece
-    # Update piece dictionary with new piece
-    if colour == colour.WHITE:
-        pieces_dict["active_white"].append(new_piece)
-    elif colour == colour.BLACK:
-        pieces_dict["active_black"].append(new_piece)
-    return board_dict, pieces_dict
-
-#######
-
-class Board:
-    def __init__(self) -> None:
-        self.sprites = {} #TODO: use this to store {'square': {'img': _}, {'rect': _} } to draw the GUI
-        self.array = board_dict_to_array(init_pieces(init_board_dict())[0]) # <- TODO: fix this mess (remove rect from Piece __init__ and set it in a seperate function call)
-        self.active_colour = 'w'
-        self.castling_availability = {
-            "white_kingside": True,
-            "white_queenside": True,
-            "black_kingside": True,
-            "black_queenside": True
-        }
-        self.enpassant_target_square = '-' 
-        self.halfmove_clock = 0 #This is the number of halfmoves since the last capture or pawn move.
-        self.fullmove_number = 1
-        
-    def update(self,move:str):
-        # Assuming move is given in UCI format 'e2e4' -> TODO: implement exceptions and parsing later
-        origin_square = move[:2]
-        origin_square_idx = name_to_idx(origin_square)
-        destination_square = move[2:4]
-        destination_square_idx = name_to_idx(destination_square)
-        promotion = move[4] if len(move) == 5 else None
-        
-        piece = self.array[origin_square_idx[0]][origin_square_idx[1]]
-        if piece != None:
-            legal_moves = piece.get_legal_moves(self.array, pieces={})
-        else:
-            legal_moves = None
-
-        if destination_square in legal_moves:
-            #update board
-            self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
-            self.array[origin_square_idx[0]][origin_square_idx[1]] = None
-        else:
-            raise Exception("Illegal move. Please try again.")
-            
-    def draw():
-        pass
-        
-    def print(self,mode="-clean"):
-        board = self.array
-        if mode == '-clean':
-            for row in board:
-                row = list(map(lambda x: x.id if issubclass(type(x), Piece) else x, row))
-                row = list(map(lambda x: ' ' if x == None else x, row))
-                print(row)
-        elif mode == "-FEN":
-            pass
-        elif mode == "-raw":
-            for row in board: print(row)
-        else:
-            raise Exception("Board.print(): valid arguments for 'mode' are '-clean', '-FEN' or '-raw'.")
-
-    def get_active_pieces():
-        active_pieces = {
-            "w": [],
-            "b": []
-        }
-        return active_pieces 

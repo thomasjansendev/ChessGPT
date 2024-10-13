@@ -4,6 +4,9 @@ SCREEN_HEIGHT = 512
 SPRITE_WIDTH = SCREEN_WIDTH / COLS
 SPRITE_HEIGHT = SCREEN_HEIGHT / ROWS
 CELL_WIDTH, CELL_HEIGHT = SPRITE_WIDTH, SPRITE_HEIGHT
+RANKS = ['1','2','3','4','5','6','7','8'] # to verify LLM output string
+FILES = ['a','b','c','d','e','f','g','h'] # to verify LLM output string
+PIECES = ['Q','K','N','B','R'] # to verify LLM output string (for promotions)
 
 from enum import Enum
 colour = Enum('colour', ['WHITE', 'BLACK'])

@@ -17,6 +17,7 @@ def main():
     
     # Chess Initialization
     board, pieces = init_pieces(init_board_dict())
+    board_obj = Board()
     current_player = colour.WHITE
     
     # Game state variables
@@ -40,9 +41,7 @@ def main():
                         dragging = True
                         grabbed_piece = square_dict["piece"]
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
-                        
                         possible_moves = grabbed_piece.get_legal_moves(board_dict_to_array(board), pieces)
-                        
                         print(possible_moves)
                         square_of_origin = square_dict #used to return piece to square in case move is invalid 
                         square_dict["piece"] = None #removes piece from square
@@ -80,7 +79,7 @@ def main():
                 dragging = False
                 grabbed_piece = None
                 possible_moves = None
-                
+
                 
         screen.fill("black")
         

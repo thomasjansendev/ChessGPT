@@ -29,7 +29,7 @@ class Board:
         self.gamelog = "" # To keep track of turns in PGN format
         
         
-    def update(self,move:str):
+    def update(self,move:str): #TODO: add possible_moves to method signature as kwarg to avoid calculating twice
         # Assuming move is given in UCI format 'e2e4' (long algebraic notation)
         origin_square = move[:2]
         origin_square_idx = name_to_idx(origin_square)
@@ -90,6 +90,12 @@ class Board:
         elif piece.colour == 'b':
             self.active_pieces["b"].remove(piece)
             self.captured_pieces["b"].append(piece)
+    
+    def swap_active_colour(self):
+        if self.active_colour == 'w':
+            self.active_colour = 'b'
+        elif self.active_colour == 'b':
+            self.active_colour = 'w'
     
     def update_gamelog(self, piece:Piece, origin_square:str, destination_square:str, capture:bool=False, check:bool=False, castling:str='', promotion:str=''):
         
@@ -203,6 +209,6 @@ def init_piece_sprites(board: Board):
     # but at least the backend and frontend operations are decoupled and I can more easily swap to a different frontend when needed 
     # + it is an operation done a initialization and not at runtime
     for piece in board.active_pieces["w"] + board.active_pieces["b"]:
-        square = piece.get_position(board.array)
+        square = idx_to_name(piece.get_position(board.array))
         square_rect = board.sprites[square]["rect"]
         piece.rect = piece.img.get_rect(topleft=(square_rect.x, square_rect.y))

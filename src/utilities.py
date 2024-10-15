@@ -27,16 +27,6 @@ def print_gamelog(gamelog) -> None:
     for key in gamelog:
         print(f"{key}. {gamelog[key]}")
     
-def update_gamelog(gamelog: dict, turn_number: int, piece, square: str) -> dict:
-    if piece.id == 'p': id = ''
-    else: id = piece.id
-    if piece.colour == colour.WHITE:
-        gamelog[turn_number] = f"{id}{square}"
-    elif piece.colour == colour.BLACK:
-        gamelog[turn_number] += f" {id}{square}"
-        turn_number += 1
-    return gamelog, turn_number
-    
 def board_dict_to_array(board: dict) -> list:
     board_array = [[None for _ in range(8)] for _ in range(8)] #initialize empty board
     # Could be optimized to not reset the board_array each time get
@@ -51,11 +41,11 @@ def board_dict_to_array(board: dict) -> list:
     
     return board_array
 
-def change_current_player(current_player) -> colour:
-    if current_player == colour.WHITE:
-        return colour.BLACK
-    elif current_player == colour.BLACK:
-        return colour.WHITE
+def change_current_player(current_player) -> str:
+    if current_player == 'w':
+        return 'b'
+    elif current_player == 'b':
+        return 'w'
     
 def clear(): #clears the console line
     # for windows

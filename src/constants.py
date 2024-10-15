@@ -8,9 +8,6 @@ RANKS = ['1','2','3','4','5','6','7','8'] # to verify LLM output string
 FILES = ['a','b','c','d','e','f','g','h'] # to verify LLM output string
 PIECES = ['Q','K','N','B','R'] # to verify LLM output string (for promotions)
 
-from enum import Enum
-colour = Enum('colour', ['WHITE', 'BLACK'])
-
 ARRAY_CARDINALS = { "N":  (-1,0),
                     "NE": (-1,1),
                     "E":  (0,1),

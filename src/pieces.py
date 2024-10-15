@@ -1,10 +1,10 @@
-from src.constants import ARRAY_CARDINALS, BOARD_REF, colour
+from src.constants import ARRAY_CARDINALS, BOARD_REF
 from src.sprites import SPRITES_DICT
 from src.utilities import idx_to_name, name_to_idx, move_dict_to_list
 # from src.board import Board
 
 class Piece:
-    def __init__(self, colour: colour) -> None:
+    def __init__(self, colour: str) -> None:
         self.colour = colour
         self.id = None
         self.moveset = None
@@ -13,6 +13,7 @@ class Piece:
 
     # Return the position of the piece in a 8x8 array representing the board
     def get_position(self, board_array: list) -> tuple:
+        # this could be removed if the piece's position was tracked as a class attribute
         for i in range(0,len(board_array)):
             if self in board_array[i]:
                 return (i, board_array[i].index(self))
@@ -33,27 +34,27 @@ class Piece:
 
     
 class Queen(Piece): # can move in any direction => 8 DOF
-    def __init__(self, colour: colour) -> None:
+    def __init__(self, colour: str) -> None:
         super().__init__(colour)
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
-        if colour == colour.WHITE:
+        if colour == 'w':
             self.id = "Q"
             self.img = SPRITES_DICT["w_queen"]
-        elif colour == colour.BLACK:
+        elif colour == 'b':
             self.id = "q"
             self.img = SPRITES_DICT["b_queen"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
         
 class King(Piece): # can move to any adjacent square by 1 => 8 DOF
-    def __init__(self, colour: colour) -> None:
+    def __init__(self, colour: str) -> None:
         super().__init__(colour)
         self.moveset = ["N","E","S","O","NE","SE","SO","NO"]
         self.movedepth = 1
-        if colour == colour.WHITE:
+        if colour == 'w':
             self.id = "K"     
             self.img = SPRITES_DICT["w_king"]
-        elif colour == colour.BLACK:
+        elif colour == 'b':
             self.id = "k"
             self.img = SPRITES_DICT["b_king"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))    
@@ -77,13 +78,13 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         return possible_moves
         
 class Knight(Piece): # can jump in L shape => 8 DOF
-    def __init__(self, colour: colour) -> None:
+    def __init__(self, colour: str) -> None:
         super().__init__(colour)
         self.moveset = [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
-        if colour == colour.WHITE:
+        if colour == 'w':
             self.id = "N"
             self.img = SPRITES_DICT["w_knight"]
-        elif colour == colour.BLACK:
+        elif colour == 'b':
             self.id = "n"
             self.img = SPRITES_DICT["b_knight"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
@@ -109,46 +110,46 @@ class Knight(Piece): # can jump in L shape => 8 DOF
 
 
 class Bishop(Piece): # can move diagonally => 4 DOF
-    def __init__(self, colour: colour) -> None:
+    def __init__(self, colour: str) -> None:
         super().__init__(colour)
         self.moveset = ["NE","SE","SO","NO"]
-        if colour == colour.WHITE:
+        if colour == 'w':
             self.id = "B"
             self.img = SPRITES_DICT["w_bishop"]
-        elif colour == colour.BLACK:
+        elif colour == 'b':
             self.id = "b"
             self.img = SPRITES_DICT["b_bishop"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
 
 class Rook(Piece): # can move horizontally and vertically => 4 DOF
-    def __init__(self, colour: colour) -> None:
+    def __init__(self, colour: str) -> None:
         super().__init__(colour)
         self.moveset = ["N","E","S","O"]
-        if colour == colour.WHITE:
+        if colour == 'w':
             self.id = "R"
             self.img = SPRITES_DICT["w_rook"]
-        elif colour == colour.BLACK:
+        elif colour == 'b':
             self.id = "r"
             self.img = SPRITES_DICT["b_rook"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
 
 class Pawn(Piece): # 1.5 DOF
-    def __init__(self, colour: colour) -> None:
+    def __init__(self, colour: str) -> None:
         super().__init__(colour)
-        if colour == colour.WHITE:
+        if colour == 'w':
             self.id = "P"
             self.moveset = ["N","NE","NO"]
             self.starting_row = 6
             self.img = SPRITES_DICT["w_pawn"]
-        elif colour == colour.BLACK:
+        elif colour == 'b':
             self.id = "p"
             self.moveset = ["S","SE","SO"]
             self.starting_row = 1
             self.img = SPRITES_DICT["b_pawn"]
         else:
-            raise Exception("colour value should be WHITE or BLACK")
+            raise Exception("Colour value should be 'w' or 'b'")
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
     def get_legal_moves(self, board) -> list:
@@ -255,12 +256,12 @@ def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', fo
     else:
         raise Exception("move_search: 'format' argument is invalid. Should either be '-dict' or '-list'")
 
-def get_squares_under_threat(board, piece_colour: colour):
+def get_squares_under_threat(board, piece_colour: str):
     # Used by king to identify squares it shouldn't move to
     
-    if piece_colour == colour.WHITE:
+    if piece_colour == 'w':
         enemy_pieces = board.active_pieces["b"]
-    elif piece_colour == colour.BLACK:
+    elif piece_colour == 'b':
         enemy_pieces = board.active_pieces["w"]
             
     possible_moves = []

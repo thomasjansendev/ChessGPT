@@ -13,13 +13,13 @@ class Piece:
 
     # Return the position of the piece in a 8x8 array representing the board
     def get_position(self, board_array: list) -> tuple:
-        # this could be removed if the piece's position was tracked as a class attribute
+        # this could be removed if the piece's position was tracked as a class attribute -> TODO: Later
         for i in range(0,len(board_array)):
             if self in board_array[i]:
                 return (i, board_array[i].index(self))
 
     # Returns a list of square names that the piece can legally move to
-    def get_legal_moves(self, board) -> list:
+    def get_legal_moves(self, board) -> list: #TODO: (perf) add position as method parameter
         board_array = board.array
         position = self.get_position(board_array)
         possible_moves = move_search(board_array, position, self, mode='-legal', format='-list')

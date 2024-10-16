@@ -2,6 +2,8 @@ import pygame
 from src.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from src.board import Board
 from src.utilities import idx_to_name
+from src.ai import system_prompt,user_prompt,get_llm_move,new_user_prompt,new_assistant_prompt
+
 
 def main():
     
@@ -15,6 +17,9 @@ def main():
     # Chess initialization
     board = Board()
     
+    # LLM initialization
+    prompt = [system_prompt, user_prompt]
+    
     # GUI state variables
     dragging = False
     grabbed_piece = None
@@ -26,6 +31,9 @@ def main():
 
             if event.type == pygame.QUIT: 
                 running = False
+            
+            if board.active_colour != "w":
+                break
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for piece in board.active_pieces[board.active_colour]:
@@ -39,11 +47,10 @@ def main():
                         break
             
             elif event.type == pygame.MOUSEMOTION and dragging:
-                grabbed_piece.rect.center = (event.pos[0],event.pos[1])                
+                grabbed_piece.rect.center = (event.pos[0],event.pos[1])
             
             elif event.type == pygame.MOUSEBUTTONUP and dragging:
                 succesful_move = False
-                
                 for square in possible_moves:
                     if board.sprites[square]["rect"].collidepoint(event.pos):
                         destination_square = square
@@ -51,22 +58,24 @@ def main():
                         user_move = origin_square + destination_square
                         try: 
                             board.update(user_move) # In theory, this should never raise an exception since we only loop through possible moves
+                            print(f"\nInput from user: {user_move}")
+                            print(f"Gamelog:\n{board.gamelog}\n")
+                            board.print()
                             succesful_move = True
                         except Exception as e:
                             print(e)
                         break
-                
-                if succesful_move:
-                    grabbed_piece.rect.center = destination_rect.center
-                    board.swap_active_colour()
-                else: #if move is not valid then reset position of piece to origin
+
+                if not succesful_move: #if move is not valid then reset position of piece to origin
                     grabbed_piece.rect.center = origin_rect.center
                 
                 dragging = False
                 grabbed_piece = None
                 possible_moves = None
                             
-                
+                            
+        #---- Draw to GUI ----
+
         screen.fill("black")
         
         # Draw squares
@@ -90,6 +99,45 @@ def main():
         
         pygame.display.flip()
         dt = clock.tick(60) / 1000
+        
+        
+        #---- Get move from LLM ----
+        
+        if board.active_colour == "b":
+            user_prompt["content"] = board.gamelog
+            invalid_output = True
+            while invalid_output:
+                try:
+                    # Try getting output from LLM
+                    ai_move, ai_move_raw = get_llm_move(prompt)
+                    print("Log: ai_move format is valid")
+                    # Reset prompt to remove any error prompts that might have been appended from exceptions in get_llm_move()
+                    prompt = [system_prompt,user_prompt]
+                    # Try updating board with move request
+                    board.update(ai_move)
+                    print("Log: ai_move request is valid")
+                    # # Reset prompt to remove any error prompts that might have been appended from exceptions in board.update()
+                    # prompt = [system_prompt,user_prompt]
+                    invalid_output = False
+                    # Print
+                    print(f"Gamelog:\n{board.gamelog}\n")
+                    board.print()
+                except ValueError as e:
+                    message, ai_move_raw = e.args
+                    prompt.append(new_assistant_prompt(ai_move_raw))
+                    prompt.append(new_user_prompt(message))
+                    print("--- ERROR ---")
+                    print(e)
+                    print(f"New prompt: {prompt[1:]}")
+                    print("-------------")
+                except Exception as e:
+                    prompt.append(new_assistant_prompt(ai_move))
+                    prompt.append(new_user_prompt(str(e)))
+                    print("--- ERROR ---")
+                    print(e)
+                    print(f"New prompt: {prompt[1:]}")
+                    print("-------------")
+
 
 if __name__ == "__main__":
     main()

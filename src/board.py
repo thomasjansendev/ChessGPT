@@ -55,10 +55,15 @@ class Board:
             castling = verify_castling()
             promotion = move[4] if len(move) == 5 else ''
             
-            # Update board state & gamelog
+            # Update gamelog
+            self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
+            
+            # Update board state
             self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
             self.array[origin_square_idx[0]][origin_square_idx[1]] = None
-            self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
+            piece.rect.center = self.sprites[destination_square]["rect"].center
+            self.swap_active_colour()
+            if piece.colour == "b": self.fullmove_number += 1
         else:
             raise Exception(f"{move} is an illegal move. Please try again.")
             

@@ -19,9 +19,10 @@ class Piece:
                 return (i, board_array[i].index(self))
 
     # Returns a list of square names that the piece can legally move to
-    def get_legal_moves(self, board) -> list: #TODO: (perf) add position as method parameter
+    def get_legal_moves(self, board, position:tuple=None) -> list: #TODO: (perf) add position as method parameter
         board_array = board.array
-        position = self.get_position(board_array)
+        if position == None: # temp check until position parameter is fully utilized
+            position = self.get_position(board_array)
         possible_moves = move_search(board_array, position, self, mode='-legal', format='-list')
         return possible_moves
     
@@ -59,9 +60,10 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
             self.img = SPRITES_DICT["b_king"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))    
     
-    def get_legal_moves(self, board) -> list:
+    def get_legal_moves(self, board, position=None) -> list:
         board_array = board.array
-        position = self.get_position(board_array)
+        if position == None: # temp check until position parameter is fully utilized
+            position = self.get_position(board_array)
         possible_moves = move_search(board_array, position, self, mode='-legal', format='-list')
         squares_under_threat = get_squares_under_threat(board,self.colour)
         
@@ -72,10 +74,10 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         return legal_moves
         
     def get_attacking_squares(self, board) -> list:
-        board_array = board.array
-        position = self.get_position(board_array)
-        possible_moves = move_search(board_array, position, self, mode='-attacking', format='-list')
-        return possible_moves
+            board_array = board.array
+            position = self.get_position(board_array)
+            possible_moves = move_search(board_array, position, self, mode='-attacking', format='-list')
+            return possible_moves
         
 class Knight(Piece): # can jump in L shape => 8 DOF
     def __init__(self, colour: str) -> None:
@@ -89,9 +91,10 @@ class Knight(Piece): # can jump in L shape => 8 DOF
             self.img = SPRITES_DICT["b_knight"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
-    def get_legal_moves(self, board) -> list:
+    def get_legal_moves(self, board, position=None) -> list:
         board_array = board.array
-        position = self.get_position(board_array)
+        if position == None: # temp check until position parameter is fully utilized
+            position = self.get_position(board_array)
         possible_moves = []
         for move in self.moveset:
             # Add move vector from moveset to the piece's current position
@@ -152,10 +155,11 @@ class Pawn(Piece): # 1.5 DOF
             raise Exception("Colour value should be 'w' or 'b'")
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
-    def get_legal_moves(self, board) -> list:
+    def get_legal_moves(self, board, position=None) -> list:
         #TODO: add en-passant
         board_array = board.array 
-        position = self.get_position(board_array)
+        if position == None: # temp check until position parameter is fully utilized
+            position = self.get_position(board_array)
         self.movedepth = 2 if position[0] == self.starting_row else 1
         
         possible_moves_dict = move_search(board_array,position,self,mode='-legal',format='-dict')
@@ -190,13 +194,13 @@ class Pawn(Piece): # 1.5 DOF
         
         possible_moves_dict = move_search(board_array,position,self,mode='-attacking',format='-dict')
         
-        diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]] 
+        diagonal_moves = possible_moves_dict[self.moveset[1]] + possible_moves_dict[self.moveset[2]]
         return diagonal_moves
         
 
 def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', format: str='-list'):
     # mode = '-legal' returns legal moves for piece
-    # mode = '-attacking' returns squares that are threatened by piece
+    # mode = '-attacking' returns squares that are threatened by piece ignoring the king
     
     # Get parameters from piece object
     moveset = piece.moveset
@@ -238,10 +242,10 @@ def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', fo
                 elif content != None and content.colour == colour:
                     break
             
-            # When user wants to return the squares that are threatened by piece
+            # When user wants to return the squares that are threatened by piece ignoring the king -> used by King to calculate its legal moves
             if mode == '-attacking':
                 # Stop search in this direction if piece is hit and append square to move_dict
-                if content != None and type(content) != King:
+                if content != None and type(content) != King: #TODO: this might lead to situations in which the 
                     moves_dict[direction].append(square)
                     break
                 

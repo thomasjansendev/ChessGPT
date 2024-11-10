@@ -48,8 +48,6 @@ class Board:
         if destination_square not in legal_moves:
             raise Exception(f"{move} is an illegal move. Please try again.")
         
-        
-        
         # Verify capture
         destination_content = self.array[destination_square_idx[0]][destination_square_idx[1]]
         if destination_content != None and destination_content.colour != piece.colour:
@@ -58,18 +56,24 @@ class Board:
         else:
             capture = False
         
-        # Verify check and checkmate 
-        check = verify_check(self,piece,destination_square_idx)
+        # Verify castling 
         castling = verify_castling()
+        
+        # Verify promotion (currently based on LLM output length -> deeply flawed xD to be changed later)
         promotion = move[4] if len(move) == 5 else ''
         
-        # Update gamelog
-        self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
         
         # Update board state
         self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
         self.array[origin_square_idx[0]][origin_square_idx[1]] = None
         piece.rect.center = self.sprites[destination_square]["rect"].center
+        
+        # Verify check given new board state
+        check = verify_check(self,piece,destination_square_idx)
+        
+        # Update gamelog
+        self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
+        
         self.swap_active_colour()
         if piece.colour == "b": self.fullmove_number += 1
             
@@ -136,13 +140,32 @@ class Board:
 # Helper functions
 
 def verify_check(board: Board, piece: Piece, new_position: tuple):
-    # Step 1: verify whether the piece being moved is causing the check
+    # Step 1: verify whether the piece being moved has caused a check
     attacking_squares = piece.get_legal_moves(board,new_position)
-    pass
     
+    # find position of enemy king -> to be replaced later with a better implementation
+    opposite_king_id = 'k' if board.active_colour == 'w' else 'K'
+    opposite_king_pos = None
+    for rank in range(0,len(board.array)):
+        for file in range(0,len(board.array[rank])):
+            piece = board.array[rank][file]
+            if piece != None and piece.id == opposite_king_id:
+                opposite_king_pos = idx_to_name((rank,file))
     
+    if opposite_king_pos in attacking_squares:
+        return True
+    
+    # # Step 2: verify whether a discovered check has occured
+    pieces = board.active_pieces[board.active_colour]
+    squares_under_threat = []
+    for piece in pieces:
+        squares_under_threat += piece.get_legal_moves(board)
+    
+    if opposite_king_pos in squares_under_threat:
+        return True
     
     return False
+
 
 def verify_castling():
     return ''

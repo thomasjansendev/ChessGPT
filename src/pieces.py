@@ -1,6 +1,7 @@
 from src.constants import ARRAY_CARDINALS, BOARD_REF
 from src.sprites import SPRITES_DICT
 from src.utilities import idx_to_name, name_to_idx, move_dict_to_list
+from copy import deepcopy
 # from src.board import Board
 
 class Piece:
@@ -19,16 +20,15 @@ class Piece:
                 return (i, board_array[i].index(self))
 
     # Returns a list of square names that the piece can legally move to
-    def get_legal_moves(self, board, position:tuple=None) -> list: #TODO: (perf) add position as method parameter
-        board_array = board.array
+    def get_legal_moves(self, board_array:list, position:tuple=None) -> list: #TODO: (perf) add position as method parameter
         if position == None: # temp check until position parameter is fully utilized
             position = self.get_position(board_array)
         possible_moves = move_search(board_array, position, self, mode='-legal', format='-list')
+        possible_moves = filter_possible_moves(board_array,self,position,possible_moves)
         return possible_moves
     
     # Returns a list of squares that are threatened by this piece
-    def get_attacking_squares(self, board) -> list:
-        board_array = board.array
+    def get_attacking_squares(self, board_array:list) -> list:
         position = self.get_position(board_array)
         possible_moves = move_search(board_array, position, self, mode='-attacking', format='-list')
         return possible_moves
@@ -60,12 +60,11 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
             self.img = SPRITES_DICT["b_king"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))    
     
-    def get_legal_moves(self, board, position=None) -> list:
-        board_array = board.array
+    def get_legal_moves(self, board_array:list, position=None) -> list:
         if position == None: # temp check until position parameter is fully utilized
             position = self.get_position(board_array)
         possible_moves = move_search(board_array, position, self, mode='-legal', format='-list')
-        squares_under_threat = get_squares_under_threat(board,self.colour)
+        squares_under_threat = get_squares_under_threat(board_array,self.colour)
         
         legal_moves = []
         for move in possible_moves:
@@ -73,8 +72,7 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
                 legal_moves.append(move)
         return legal_moves
         
-    def get_attacking_squares(self, board) -> list:
-            board_array = board.array
+    def get_attacking_squares(self, board_array:list) -> list:
             position = self.get_position(board_array)
             possible_moves = move_search(board_array, position, self, mode='-attacking', format='-list')
             return possible_moves
@@ -91,10 +89,24 @@ class Knight(Piece): # can jump in L shape => 8 DOF
             self.img = SPRITES_DICT["b_knight"]
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
 
-    def get_legal_moves(self, board, position=None) -> list:
-        board_array = board.array
-        if position == None: # temp check until position parameter is fully utilized
-            position = self.get_position(board_array)
+    def get_legal_moves(self, board_array:list, position=None) -> list:
+        position = self.get_position(board_array)
+        possible_moves = []
+        for move in self.moveset:
+            # Add move vector from moveset to the piece's current position
+            new_move = (position[0]+move[0],position[1]+move[1])
+            # Check if new_move is within board boundaries
+            if 0 <= new_move[0] <= 7 and 0 <= new_move[1] <= 7: 
+                content = board_array[new_move[0]][new_move[1]]
+                if content != None and content.colour != self.colour:
+                    possible_moves.append(idx_to_name(new_move))
+                elif content == None:
+                    possible_moves.append(idx_to_name(new_move))   
+        possible_moves = filter_possible_moves(board_array,self,position,possible_moves)
+        return possible_moves
+    
+    def get_attacking_squares(self, board_array:list):
+        position = self.get_position(board_array)
         possible_moves = []
         for move in self.moveset:
             # Add move vector from moveset to the piece's current position
@@ -107,10 +119,6 @@ class Knight(Piece): # can jump in L shape => 8 DOF
                 elif content == None:
                     possible_moves.append(idx_to_name(new_move))   
         return possible_moves
-    
-    def get_attacking_squares(self, board):
-        return self.get_legal_moves(board)
-
 
 class Bishop(Piece): # can move diagonally => 4 DOF
     def __init__(self, colour: str) -> None:
@@ -155,9 +163,8 @@ class Pawn(Piece): # 1.5 DOF
             raise Exception("Colour value should be 'w' or 'b'")
         # self.rect = self.img.get_rect(topleft=(rect.x, rect.y))
         
-    def get_legal_moves(self, board, position=None) -> list:
+    def get_legal_moves(self, board_array:list, position=None) -> list:
         #TODO: add en-passant
-        board_array = board.array 
         if position == None: # temp check until position parameter is fully utilized
             position = self.get_position(board_array)
         self.movedepth = 2 if position[0] == self.starting_row else 1
@@ -184,11 +191,11 @@ class Pawn(Piece): # 1.5 DOF
             content = board_array[name_to_idx(move)[0]][name_to_idx(move)[1]]
             if content != None and content.colour != self.colour:
                 possible_moves_list.append(move)
-        
+                
+        possible_moves_list = filter_possible_moves(board_array,self,position,possible_moves_list) 
         return possible_moves_list
     
-    def get_attacking_squares(self, board) -> list:
-        board_array = board.array
+    def get_attacking_squares(self, board_array:list) -> list:
         position = self.get_position(board_array)
         self.movedepth = 1 # because pawns only threaten the first diagonal squares
         
@@ -198,7 +205,7 @@ class Pawn(Piece): # 1.5 DOF
         return diagonal_moves
         
 
-def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', format: str='-list'):
+def move_search(board, origin: tuple, piece: Piece, mode: str='-legal', format: str='-list'):
     # mode = '-legal' returns legal moves for piece
     # mode = '-attacking' returns squares that are threatened by piece ignoring the king
     
@@ -238,14 +245,15 @@ def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', fo
                 if content != None and content.colour != colour:
                     moves_dict[direction].append(square)
                     break
-                # Stop search in this direction if FIRENDLY piece is hit but DO NOT append square to move_dict
+                # Stop search in this direction if FRIENDLY piece is hit but DO NOT append square to move_dict
                 elif content != None and content.colour == colour:
                     break
             
             # When user wants to return the squares that are threatened by piece ignoring the king -> used by King to calculate its legal moves
+            # It essentially returns the 'line of sight' of piece
             if mode == '-attacking':
                 # Stop search in this direction if piece is hit and append square to move_dict
-                if content != None and type(content) != King: #TODO: this might lead to situations in which the 
+                if content != None and type(content) != King:
                     moves_dict[direction].append(square)
                     break
                 
@@ -260,17 +268,76 @@ def move_search(board: list, origin: tuple, piece: Piece, mode: str='-legal', fo
     else:
         raise Exception("move_search: 'format' argument is invalid. Should either be '-dict' or '-list'")
 
-def get_squares_under_threat(board, piece_colour: str):
+def get_squares_under_threat(board_array:list, piece_colour: str):
     # Used by king to identify squares it shouldn't move to
     
-    if piece_colour == 'w':
-        enemy_pieces = board.active_pieces["b"]
-    elif piece_colour == 'b':
-        enemy_pieces = board.active_pieces["w"]
-            
-    possible_moves = []
-    for piece in enemy_pieces:
-        possible_moves += piece.get_attacking_squares(board)
-
-    return list(set(possible_moves)) #convert to set to remove duplicate values
+    opposite_pieces = []
+    for rank in range(0,len(board_array)):
+        for file in range(0,len(board_array[rank])):
+            piece = board_array[rank][file]
+            if piece != None and piece.colour != piece_colour:
+                opposite_pieces.append(piece)
     
+    squares_under_threat = []
+    for piece in opposite_pieces:
+        squares_under_threat += piece.get_attacking_squares(board_array)
+
+    return list(set(squares_under_threat)) #convert to set to remove duplicate values
+
+def filter_possible_moves(board_array,piece:Piece,origin_square_idx: str,possible_moves:list):
+    # Definition: Removes moves that would lead to a check
+    
+    result = []    
+    for move in possible_moves:
+    
+        # Step 0: create temp array
+        tmp_board_array = copy_board(board_array)
+        active_colour = piece.colour
+        
+        # Step 1: move the piece in a temp array
+        destination_square_idx = name_to_idx(move)  
+        tmp_board_array[destination_square_idx[0]][destination_square_idx[1]] = piece
+        tmp_board_array[origin_square_idx[0]][origin_square_idx[1]] = None
+        
+        # Step 2: verify if a check occurs as a result of this new board state
+        if verify_check_before_move(tmp_board_array,active_colour):
+            continue
+
+        # Step 3: append move to result if if does not lead to a check 
+        result.append(move)
+    
+    return result
+
+def verify_check_before_move(board_array,active_colour):
+    # Verifies whether a  move leads to a check
+    
+    # Step 0: Find position of active king and log active pieces of opposite colour
+    active_king_id = 'K' if active_colour == 'w' else 'k'
+    active_king_pos = None
+    opposite_pieces = []
+    for rank in range(0,len(board_array)):
+        for file in range(0,len(board_array[rank])):
+            piece = board_array[rank][file]
+            if piece == None:
+                continue
+            if piece.id == active_king_id:
+                active_king_pos = idx_to_name((rank,file))
+            if piece.colour != active_colour:
+                opposite_pieces.append(piece)
+    
+    # Step 1: calculate squares being attacked by opposite colour
+    squares_under_threat = []
+    for piece in opposite_pieces:
+        squares_under_threat += piece.get_attacking_squares(board_array)
+    
+    # Step 2: verify check
+    if active_king_pos in squares_under_threat:
+        return True
+    
+    return False
+
+def copy_board(board_array:list) -> list:
+    board_copy = []
+    for rank in board_array:
+        board_copy.append(rank.copy())
+    return board_copy

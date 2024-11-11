@@ -42,7 +42,7 @@ def main():
                         grabbed_piece.rect.center = (event.pos[0],event.pos[1]) #snap piece to mouse
                         origin_square = idx_to_name(piece.get_position(board.array)) #calling get_position negates the performance improvement of looping through active pieces of current player -> consider changing this
                         origin_rect = board.sprites[origin_square]["rect"]
-                        possible_moves = grabbed_piece.get_legal_moves(board) #called here and in board.update() <- TODO: make this better
+                        possible_moves = grabbed_piece.get_legal_moves(board.array) #called here and in board.update() <- TODO: make this better
                         dragging = True
                         break
             

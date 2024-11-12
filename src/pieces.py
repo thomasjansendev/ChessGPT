@@ -285,7 +285,7 @@ def get_squares_under_threat(board_array:list, piece_colour: str):
     return list(set(squares_under_threat)) #convert to set to remove duplicate values
 
 def filter_possible_moves(board_array,piece:Piece,origin_square_idx: str,possible_moves:list):
-    # Definition: Removes moves that would lead to a check
+    # Definition: Removes moves that would lead to a check. For every legal move, calculate if it could lead to a check on own king.
     
     result = []    
     for move in possible_moves:

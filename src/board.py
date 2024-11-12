@@ -29,49 +29,43 @@ class Board:
         self.gamelog = "" # To keep track of turns in PGN format
         
         
-    def update(self,move:str): #TODO: add legal_moves to method signature as kwarg to avoid calculating twice
+    def update(self,move:str): #TODO: add possible_moves to method signature as kwarg to avoid calculating twice
         # Assuming move is given in UCI format 'e2e4' (long algebraic notation)
         origin_square = move[:2]
         origin_square_idx = name_to_idx(origin_square)
         destination_square = move[2:4]
         destination_square_idx = name_to_idx(destination_square)
         
-        # Check if piece is valid
+        # Get list of legal moves if piece is available on selected square
         piece = self.array[origin_square_idx[0]][origin_square_idx[1]]
-        if piece == None:
-            raise Exception(f"No piece is available on {origin_square}.")
-        elif piece.colour != self.active_colour:
-            raise Exception(f"The piece you are trying to move does not belong to you.")
-        
-        # Check if requested move is valid
-        legal_moves = piece.get_legal_moves(self)
-        if destination_square not in legal_moves:
-            raise Exception(f"{move} is an illegal move. Please try again.")
-        
-        
-        
-        # Verify capture
-        destination_content = self.array[destination_square_idx[0]][destination_square_idx[1]]
-        if destination_content != None and destination_content.colour != piece.colour:
-            self.capture_piece(destination_content)
-            capture = True
+        if piece != None:
+            legal_moves = piece.get_legal_moves(self)
         else:
-            capture = False
+            raise Exception(f"No piece is available on {origin_square}.")
         
-        # Verify check and checkmate 
-        check = verify_check(self,piece,destination_square_idx)
-        castling = verify_castling()
-        promotion = move[4] if len(move) == 5 else ''
-        
-        # Update gamelog
-        self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
-        
-        # Update board state
-        self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
-        self.array[origin_square_idx[0]][origin_square_idx[1]] = None
-        piece.rect.center = self.sprites[destination_square]["rect"].center
-        self.swap_active_colour()
-        if piece.colour == "b": self.fullmove_number += 1
+        destination_content = self.array[destination_square_idx[0]][destination_square_idx[1]]
+        if destination_square in legal_moves:
+            # Check special movement conditions (check, capture, castling, promotion)
+            if destination_content != None and destination_content.colour != piece.colour:
+                capture = True
+                self.capture_piece(destination_content)
+            else:
+                capture = False
+            check = verify_check()
+            castling = verify_castling()
+            promotion = move[4] if len(move) == 5 else ''
+            
+            # Update gamelog
+            self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
+            
+            # Update board state
+            self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
+            self.array[origin_square_idx[0]][origin_square_idx[1]] = None
+            piece.rect.center = self.sprites[destination_square]["rect"].center
+            self.swap_active_colour()
+            if piece.colour == "b": self.fullmove_number += 1
+        else:
+            raise Exception(f"{move} is an illegal move. Please try again.")
             
     def draw():
         pass
@@ -135,13 +129,7 @@ class Board:
     
 # Helper functions
 
-def verify_check(board: Board, piece: Piece, new_position: tuple):
-    # Step 1: verify whether the piece being moved is causing the check
-    attacking_squares = piece.get_legal_moves(board,new_position)
-    pass
-    
-    
-    
+def verify_check():
     return False
 
 def verify_castling():

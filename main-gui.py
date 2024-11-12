@@ -9,7 +9,6 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
     clock = pygame.time.Clock()
-    running = True
     dt = 0
     
     # Chess initialization
@@ -20,7 +19,7 @@ def main():
     grabbed_piece = None
     possible_moves = None
     
-    while running:
+    while not board.checkmate:
         
         for event in pygame.event.get():
 

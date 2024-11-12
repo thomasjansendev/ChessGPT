@@ -68,6 +68,8 @@ class Board:
         
         # Verify check given new board state
         check = verify_check_after_move(self)
+        if check:
+            verify_checkmate(self)
         
         # Update gamelog
         self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
@@ -113,7 +115,11 @@ class Board:
     def update_gamelog(self, piece:Piece, origin_square:str, destination_square:str, capture:bool=False, check:bool=False, castling:str='', promotion:str=''):
         
         piece_str = piece.id.upper() if type(piece) != Pawn else ''
-        check_str = '+' if check == True else ''
+        check_str = ''
+        if self.checkmate == True:
+            check_str = '#'
+        elif check == True:
+            check_str = '+'
         
         if capture and type(piece) != Pawn:
             capture_str = 'x'
@@ -158,8 +164,19 @@ def verify_check_after_move(board: Board):
     # Step 2: verify check
     if opposite_king_pos in squares_under_threat:
         return True
-    
+        
     return False
+
+def verify_checkmate(board:Board):
+    opposite_colour = 'b' if board.active_colour == 'w' else 'w'
+    
+    possible_moves_for_opposite_colour = []
+    for piece in board.active_pieces[opposite_colour]:
+        possible_moves_for_opposite_colour += piece.get_legal_moves(board.array)
+    
+    if len(possible_moves_for_opposite_colour) == 0:
+        board.checkmate = True
+
 
 def verify_castling():
     return ''

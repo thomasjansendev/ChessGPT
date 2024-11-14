@@ -66,6 +66,11 @@ class Board:
         self.array[origin_square_idx[0]][origin_square_idx[1]] = None
         piece.rect.center = self.sprites[destination_square]["rect"].center
         
+        # Update castling rights
+        if type(piece) == King or type(piece) == Rook:
+            update_castling_availability(self,piece,origin_square)
+            print(self.castling_availability)
+        
         # Verify check given new board state
         check = verify_check_after_move(self)
         if check:
@@ -181,6 +186,32 @@ def verify_checkmate(board:Board):
 def verify_castling():
     return ''
 
+def update_castling_availability(board:Board,piece:Piece,square_of_origin:str):
+    
+    if (board.castling_availability['white_kingside'] == False and
+        board.castling_availability['white_queenside'] == False and
+        board.castling_availability['black_kingside'] == False and
+        board.castling_availability['black_queenside'] == False):
+        return
+    
+    if type(piece) == King:
+        if square_of_origin == 'e1' and piece.colour == 'w':
+            board.castling_availability['white_kingside'] = False
+            board.castling_availability['white_queenside'] = False
+        elif square_of_origin == 'e8' and piece.colour == 'b':
+            board.castling_availability['black_kingside'] = False
+            board.castling_availability['black_queenside'] = False        
+    
+    if type(piece) == Rook:
+        if square_of_origin == 'a1' and piece.colour == 'w':
+            board.castling_availability['white_queenside'] = False
+        elif square_of_origin == 'h1' and piece.colour == 'w':
+            board.castling_availability['white_kingside'] = False
+        elif square_of_origin == 'a8' and piece.colour == 'b':
+            board.castling_availability['black_queenside'] = False
+        elif square_of_origin == 'h8' and piece.colour == 'b':
+            board.castling_availability['black_kingside'] = False
+        
 def init_empty_board() -> list:
     return [[None for _ in range(8)] for _ in range(8)]
 

@@ -43,7 +43,7 @@ class Board:
             raise Exception(f"The piece you are trying to move does not belong to you.")
         
         # Check if requested move is valid
-        legal_moves = piece.get_legal_moves(self.array)
+        legal_moves = piece.get_legal_moves(self)
         if destination_square not in legal_moves:
             raise Exception(f"{move} is an illegal move. Please try again.")
         
@@ -164,7 +164,7 @@ def verify_check_after_move(board: Board):
     pieces = board.active_pieces[board.active_colour]
     squares_under_threat = []
     for piece in pieces:
-        squares_under_threat += piece.get_attacking_squares(board.array)
+        squares_under_threat += piece.get_attacking_squares(board)
     
     # Step 2: verify check
     if opposite_king_pos in squares_under_threat:
@@ -177,7 +177,7 @@ def verify_checkmate(board:Board):
     
     possible_moves_for_opposite_colour = []
     for piece in board.active_pieces[opposite_colour]:
-        possible_moves_for_opposite_colour += piece.get_legal_moves(board.array)
+        possible_moves_for_opposite_colour += piece.get_legal_moves(board)
     
     if len(possible_moves_for_opposite_colour) == 0:
         board.checkmate = True

@@ -55,11 +55,9 @@ class Board:
         else:
             capture = False
         
-        # Verify if castling is requested and return what kind
+        # Verify if castling is requested and return what kind of castling
         castling = verify_castling(piece,move,self.castling_availability)
         
-        # Verify promotion (currently based on LLM output length -> deeply flawed xD to be changed later)
-        promotion = move[4] if len(move) == 5 else ''
         
         # Move pieces on the board
         self.move_piece(piece,origin_square_idx,destination_square_idx,castling)
@@ -67,6 +65,12 @@ class Board:
         # Update castling rights
         if type(piece) == King or type(piece) == Rook:
             update_castling_availability(self,piece,origin_square)
+        
+        # Handle piece promotion if applicable
+        promotion = ''
+        if type(piece) == Pawn:
+            promotion = handle_promotion(self,piece,destination_square_idx)
+            # promotion = move[4] if len(move) == 5 else '' # based on LLM output
         
         # Verify check given new board state
         check = verify_check_after_move(self)
@@ -78,11 +82,11 @@ class Board:
         
         # Update game state
         self.swap_active_colour()
-        if piece.colour == "b": self.fullmove_number += 1 
         if type(piece) == Pawn or capture:
             self.halfmove_clock = 0
         else:
             self.halfmove_clock += 1
+        if piece.colour == "b": self.fullmove_number += 1 
         
     def print(self,mode="-clean"):
         board = self.array
@@ -260,6 +264,16 @@ def castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos):
     piece.rect.center = self.sprites[idx_to_name(king_new_pos)]["rect"].center
     return
     
+def handle_promotion(board:Board,pawn:Piece,destination_square_idx:tuple):
+    if (pawn.colour == 'w' and destination_square_idx[0] == 0) or (pawn.colour == 'b' and destination_square_idx[0] == 7):
+        new_piece = Queen(pawn.colour)
+        square_rect = board.sprites[idx_to_name(destination_square_idx)]["rect"]
+        new_piece.rect = new_piece.img.get_rect(topleft=(square_rect.x, square_rect.y))
+        board.array[destination_square_idx[0]][destination_square_idx[1]] = new_piece
+        board.active_pieces[pawn.colour].remove(pawn)
+        board.active_pieces[pawn.colour].append(new_piece)
+        return '=' + new_piece.id
+    return ''
 
 def init_empty_board() -> list:
     return [[None for _ in range(8)] for _ in range(8)]

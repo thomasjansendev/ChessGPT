@@ -42,7 +42,7 @@ class Board:
         elif piece.colour != self.active_colour:
             raise Exception(f"The piece you are trying to move does not belong to you.")
         
-        # Check if requested move is valid
+        # Check if requested move is valid (for LLM outputs)
         legal_moves = piece.get_legal_moves(self)
         if destination_square not in legal_moves:
             raise Exception(f"{move} is an illegal move. Please try again.")
@@ -55,21 +55,18 @@ class Board:
         else:
             capture = False
         
-        # Verify castling 
-        castling = verify_castling()
+        # Verify if castling is requested and return what kind
+        castling = verify_castling(piece,move,self.castling_availability)
         
         # Verify promotion (currently based on LLM output length -> deeply flawed xD to be changed later)
         promotion = move[4] if len(move) == 5 else ''
         
-        # Update board state
-        self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
-        self.array[origin_square_idx[0]][origin_square_idx[1]] = None
-        piece.rect.center = self.sprites[destination_square]["rect"].center
-        
+        # Move pieces on the board
+        self.move_piece(piece,origin_square_idx,destination_square_idx,castling)
+
         # Update castling rights
         if type(piece) == King or type(piece) == Rook:
             update_castling_availability(self,piece,origin_square)
-            print(self.castling_availability)
         
         # Verify check given new board state
         check = verify_check_after_move(self)
@@ -81,9 +78,6 @@ class Board:
         
         self.swap_active_colour()
         if piece.colour == "b": self.fullmove_number += 1
-            
-    def draw():
-        pass
         
     def print(self,mode="-clean"):
         board = self.array
@@ -120,22 +114,21 @@ class Board:
     def update_gamelog(self, piece:Piece, origin_square:str, destination_square:str, capture:bool=False, check:bool=False, castling:str='', promotion:str=''):
         
         piece_str = piece.id.upper() if type(piece) != Pawn else ''
+        
         check_str = ''
         if self.checkmate == True:
             check_str = '#'
         elif check == True:
             check_str = '+'
         
+        capture_str = ''
         if capture and type(piece) != Pawn:
             capture_str = 'x'
         elif capture and type(piece) == Pawn:
             capture_str = f'{origin_square[0]}x' #add column origin file if piece is a pawn
-        else:
-            capture_str = ''
         
-        if castling == '':
-            move_str = f"{piece_str}{capture_str}{destination_square}{promotion}{check_str}"
-        elif castling == 'queenside':
+        move_str = f"{piece_str}{capture_str}{destination_square}{promotion}{check_str}"
+        if castling == 'queenside':
             move_str = "0-0-0"
         elif castling == 'kingside':
             move_str = "0-0"
@@ -144,7 +137,37 @@ class Board:
             self.gamelog += f'{self.fullmove_number}. {move_str} '
         elif self.active_colour == 'b':
             self.gamelog += f'{move_str} '
-         
+    
+    def move_piece(self,piece:Piece,origin_square_idx:tuple,destination_square_idx:tuple,castling:str):
+        if castling is None:
+            self.array[destination_square_idx[0]][destination_square_idx[1]] = piece
+            self.array[origin_square_idx[0]][origin_square_idx[1]] = None
+            piece.rect.center = self.sprites[idx_to_name(destination_square_idx)]["rect"].center
+            return
+        
+        if castling == 'kingside' and self.active_colour == 'w':
+            rook_old_pos, rook_new_pos = name_to_idx('h1'), name_to_idx('f1')
+            king_old_pos, king_new_pos = origin_square_idx, name_to_idx('g1')
+            castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos)
+            return
+        
+        if castling == 'kingside' and self.active_colour == 'b':
+            rook_old_pos, rook_new_pos = name_to_idx('h8'), name_to_idx('f8')
+            king_old_pos, king_new_pos = origin_square_idx, name_to_idx('g8')
+            castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos)
+            return
+        
+        if castling == 'queenside' and self.active_colour == 'w':
+            rook_old_pos, rook_new_pos = name_to_idx('a1'), name_to_idx('d1')
+            king_old_pos, king_new_pos = origin_square_idx, name_to_idx('c1')
+            castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos)
+            return
+        
+        if castling == 'queenside' and self.active_colour == 'b':
+            rook_old_pos, rook_new_pos = name_to_idx('a8'), name_to_idx('d8')
+            king_old_pos, king_new_pos = origin_square_idx, name_to_idx('c8')
+            castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos)
+            return
     
 # Helper functions
 
@@ -159,6 +182,7 @@ def verify_check_after_move(board: Board):
             piece = board.array[rank][file]
             if piece != None and piece.id == opposite_king_id:
                 opposite_king_pos = idx_to_name((rank,file))
+                break
     
     # Step 1: calculate squares under threat
     pieces = board.active_pieces[board.active_colour]
@@ -183,8 +207,15 @@ def verify_checkmate(board:Board):
         board.checkmate = True
 
 
-def verify_castling():
-    return ''
+def verify_castling(piece:Piece,move:str,castling_availability:dict)->str:
+    # Used to move pieces correctly in case castling is requested
+    if type(piece) != King:
+        return None
+    if move == 'e1g1' or move == 'e1h1' or move == 'e8g8' or move == 'e8h8':
+        return 'kingside'
+    if move == 'e1c1' or move == 'e1a1' or move == 'e8c8' or move == 'e8a8':
+        return 'queenside'
+    return None
 
 def update_castling_availability(board:Board,piece:Piece,square_of_origin:str):
     
@@ -200,7 +231,8 @@ def update_castling_availability(board:Board,piece:Piece,square_of_origin:str):
             board.castling_availability['white_queenside'] = False
         elif square_of_origin == 'e8' and piece.colour == 'b':
             board.castling_availability['black_kingside'] = False
-            board.castling_availability['black_queenside'] = False        
+            board.castling_availability['black_queenside'] = False
+        return      
     
     if type(piece) == Rook:
         if square_of_origin == 'a1' and piece.colour == 'w':
@@ -211,7 +243,19 @@ def update_castling_availability(board:Board,piece:Piece,square_of_origin:str):
             board.castling_availability['black_queenside'] = False
         elif square_of_origin == 'h8' and piece.colour == 'b':
             board.castling_availability['black_kingside'] = False
-        
+
+def castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos):
+    rook = self.array[rook_old_pos[0]][rook_old_pos[1]]
+    king = piece
+    self.array[rook_old_pos[0]][rook_old_pos[1]] = None
+    self.array[rook_new_pos[0]][rook_new_pos[1]] = rook
+    self.array[king_old_pos[0]][king_old_pos[1]] = None
+    self.array[king_new_pos[0]][king_new_pos[1]] = king
+    rook.rect.center = self.sprites[idx_to_name(rook_new_pos)]["rect"].center
+    piece.rect.center = self.sprites[idx_to_name(king_new_pos)]["rect"].center
+    return
+    
+
 def init_empty_board() -> list:
     return [[None for _ in range(8)] for _ in range(8)]
 

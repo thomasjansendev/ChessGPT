@@ -57,7 +57,6 @@ def main():
                         break
                 
                 if succesful_move:
-                    grabbed_piece.rect.center = destination_rect.center
                     print(board.gamelog)
                 else: #if move is not valid then reset position of piece to origin
                     grabbed_piece.rect.center = origin_rect.center

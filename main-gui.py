@@ -20,7 +20,7 @@ def main():
     grabbed_piece = None
     possible_moves = None
     
-    while running and not board.checkmate:
+    while running and not board.checkmate and board.halfmove_clock <= 50:
         
         for event in pygame.event.get():
 

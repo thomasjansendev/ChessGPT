@@ -23,7 +23,7 @@ class Board:
             "black_queenside": True
         }
         self.enpassant_target_square = '-' 
-        self.halfmove_clock = 0 # This is the number of halfmoves since the last capture or pawn move.
+        self.halfmove_clock = 0 # This is the number of halfmoves since the last capture or pawn move
         self.fullmove_number = 1
         self.checkmate = False
         self.gamelog = "" # To keep track of turns in PGN format
@@ -50,7 +50,7 @@ class Board:
         # Verify capture
         destination_content = self.array[destination_square_idx[0]][destination_square_idx[1]]
         if destination_content != None and destination_content.colour != piece.colour:
-            self.capture_piece(destination_content)
+            self.capture_piece(destination_content) 
             capture = True
         else:
             capture = False
@@ -76,8 +76,13 @@ class Board:
         # Update gamelog
         self.update_gamelog(piece,origin_square,destination_square,capture,check,castling,promotion)
         
+        # Update game state
         self.swap_active_colour()
-        if piece.colour == "b": self.fullmove_number += 1
+        if piece.colour == "b": self.fullmove_number += 1 
+        if type(piece) == Pawn or capture:
+            self.halfmove_clock = 0
+        else:
+            self.halfmove_clock += 1
         
     def print(self,mode="-clean"):
         board = self.array

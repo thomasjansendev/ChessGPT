@@ -7,7 +7,7 @@ def main():
     board = Board()
     prompt = [system_prompt, user_prompt]
 
-    while not board.checkmate:
+    while not board.checkmate and board.halfmove_clock <= 50:
         
         # Get move from user
         invalid_output = True

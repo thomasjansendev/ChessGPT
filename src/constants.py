@@ -32,5 +32,3 @@ for row in range(0,len(BOARD_REF)):
     for col in range(0,len(BOARD_REF[row])):
         square_name = BOARD_REF[row][col]
         BOARD_REF_DICT[square_name] = (row,col)
-
-        

@@ -1,4 +1,3 @@
-from src.utilities import clear
 from src.board import Board
 from src.ai import *
 

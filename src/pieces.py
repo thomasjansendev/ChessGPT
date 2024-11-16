@@ -1,7 +1,6 @@
 from src.constants import ARRAY_CARDINALS, BOARD_REF
 from src.sprites import SPRITES_DICT
-from src.utilities import idx_to_name, name_to_idx, move_dict_to_list
-from copy import deepcopy
+from src.utilities import idx_to_name, name_to_idx 
 # from src.board import Board
 
 class Piece:
@@ -264,7 +263,10 @@ def move_search(board:list, origin: tuple, piece: Piece, mode: str='-legal', for
         return moves_dict
     # Return list as default
     elif format == '-list':
-        return move_dict_to_list(moves_dict)
+        moves_list = []
+        for direction in moves_dict:
+            moves_list += moves_dict[direction]
+        return moves_list
     else:
         raise Exception("move_search: 'format' argument is invalid. Should either be '-dict' or '-list'")
 

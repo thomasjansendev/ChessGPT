@@ -1,4 +1,3 @@
-import pygame
 from src.sprites import SPRITES_DICT
 from src.utilities import *
 from src.constants import *

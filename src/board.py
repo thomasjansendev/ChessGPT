@@ -21,7 +21,7 @@ class Board:
             "black_kingside": True,
             "black_queenside": True
         }
-        self.enpassant_target_square = '-' 
+        self.enpassant = {'target_piece': None, 'target_pos': None,'target_square': '', 'target_colour': '', 'pieces': []}
         self.halfmove_clock = 0 # This is the number of halfmoves since the last capture or pawn move
         self.fullmove_number = 1
         self.checkmate = False
@@ -47,16 +47,15 @@ class Board:
             raise Exception(f"{move} is an illegal move. Please try again.")
         
         # Verify capture
-        destination_content = self.array[destination_square_idx[0]][destination_square_idx[1]]
-        if destination_content != None and destination_content.colour != piece.colour:
-            self.capture_piece(destination_content) 
-            capture = True
-        else:
-            capture = False
+        capture = verify_capture(self,piece,destination_square_idx)
+        
+        # Update enpassant property
+        update_enpassant(self,piece,origin_square_idx,destination_square_idx)
         
         # Verify if castling is requested and return what kind of castling
-        castling = verify_castling(piece,move,self.castling_availability)
-        
+        castling = None
+        if type(piece) == King:
+            castling = verify_castling(piece,move,self.castling_availability)
         
         # Move pieces on the board
         self.move_piece(piece,origin_square_idx,destination_square_idx,castling)
@@ -105,13 +104,6 @@ class Board:
         index = name_to_idx(square)
         return self.array[index[0]][index[1]]
     
-    def capture_piece(self,piece):
-        if piece.colour == 'w':
-            self.active_pieces["w"].remove(piece)
-            self.captured_pieces["w"].append(piece)
-        elif piece.colour == 'b':
-            self.active_pieces["b"].remove(piece)
-            self.captured_pieces["b"].append(piece)
     
     def swap_active_colour(self):
         if self.active_colour == 'w':
@@ -214,11 +206,8 @@ def verify_checkmate(board:Board):
     if len(possible_moves_for_opposite_colour) == 0:
         board.checkmate = True
 
-
 def verify_castling(piece:Piece,move:str,castling_availability:dict)->str:
     # Used to move pieces correctly in case castling is requested
-    if type(piece) != King:
-        return None
     if move == 'e1g1' or move == 'e1h1' or move == 'e8g8' or move == 'e8h8':
         return 'kingside'
     if move == 'e1c1' or move == 'e1a1' or move == 'e8c8' or move == 'e8a8':
@@ -251,7 +240,8 @@ def update_castling_availability(board:Board,piece:Piece,square_of_origin:str):
             board.castling_availability['black_queenside'] = False
         elif square_of_origin == 'h8' and piece.colour == 'b':
             board.castling_availability['black_kingside'] = False
-
+        return
+    
 def castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos):
     rook = self.array[rook_old_pos[0]][rook_old_pos[1]]
     king = piece
@@ -262,7 +252,61 @@ def castle(self,piece,rook_old_pos,rook_new_pos,king_old_pos,king_new_pos):
     rook.rect.center = self.sprites[idx_to_name(rook_new_pos)]["rect"].center
     piece.rect.center = self.sprites[idx_to_name(king_new_pos)]["rect"].center
     return
+
+def verify_capture(board:Board, piece: Piece, destination_square_idx: tuple):
     
+    # Handle normal captures    
+    destination_content = board.array[destination_square_idx[0]][destination_square_idx[1]]
+    if destination_content != None and destination_content.colour != piece.colour:
+        captured_piece = destination_content
+        capture_piece(board,captured_piece)
+        return True
+
+    # Handle enpassant captures
+    if type(piece) == Pawn and idx_to_name(destination_square_idx) == board.enpassant['target_square']:
+        captured_piece = board.enpassant['target_piece']
+        captured_piece_pos = board.enpassant['target_pos']
+        board.array[captured_piece_pos[0]][captured_piece_pos[1]] = None
+        capture_piece(board,captured_piece)
+        return True
+
+    return False
+
+def capture_piece(board:Board, captured_piece:Piece):
+    if captured_piece.colour == 'w':
+        board.active_pieces["w"].remove(captured_piece)
+        board.captured_pieces["w"].append(captured_piece)
+    elif captured_piece.colour == 'b':
+        board.active_pieces["b"].remove(captured_piece)
+        board.captured_pieces["b"].append(captured_piece)
+
+def update_enpassant(board:Board,piece:Piece,origin_square_idx:tuple,destination_square_idx:tuple):
+    
+    # Reset enpassant if the opportunity was not used
+    if board.enpassant['target_colour'] == piece.colour:
+        board.enpassant = {'target_piece': None, 'target_pos': None,'target_square': '', 'target_colour': '', 'pieces': []}
+
+    move_length = abs(origin_square_idx[0] - destination_square_idx[0])
+    if type(piece) != Pawn or move_length != 2:
+        return
+
+    left_square_idx = (destination_square_idx[0], destination_square_idx[1] - 1)
+    left_square_content = board.array[left_square_idx[0]][left_square_idx[1]]
+    
+    right_square_idx = (destination_square_idx[0], destination_square_idx[1] + 1)
+    right_square_content = board.array[right_square_idx[0]][right_square_idx[1]]
+    
+    if type(left_square_content) != Pawn and type(right_square_content) != Pawn:
+        return
+    
+    target_modifier = 1 if piece.colour == 'w' else -1
+    board.enpassant['target_piece'] = piece
+    board.enpassant['target_pos'] = destination_square_idx
+    board.enpassant['target_square'] = idx_to_name((destination_square_idx[0]+target_modifier,destination_square_idx[1]))
+    board.enpassant['target_colour'] = piece.colour
+    board.enpassant['pieces'] = [left_square_content,right_square_content]
+    print(board.enpassant)
+
 def handle_promotion(board:Board,pawn:Piece,destination_square_idx:tuple):
     if (pawn.colour == 'w' and destination_square_idx[0] == 0) or (pawn.colour == 'b' and destination_square_idx[0] == 7):
         new_piece = Queen(pawn.colour)

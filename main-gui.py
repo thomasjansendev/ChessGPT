@@ -49,11 +49,8 @@ def main():
                         destination_square = square
                         destination_rect = board.sprites[square]["rect"]
                         user_move = origin_square + destination_square
-                        try: 
-                            board.update(user_move) # In theory, this should never raise an exception since we only loop through possible moves
-                            succesful_move = True
-                        except Exception as e:
-                            print(e)
+                        board.update(user_move) 
+                        succesful_move = True
                         break
                 
                 if succesful_move:

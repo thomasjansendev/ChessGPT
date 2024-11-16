@@ -23,7 +23,7 @@ class Piece:
         if position == None: # temp check until position parameter is fully utilized
             position = self.get_position(board.array)
         possible_moves = move_search(board.array, position, self, mode='-legal', format='-list')
-        possible_moves = filter_possible_moves(board,self,position,possible_moves)
+        possible_moves = filter_moves_leading_to_check(board,self,position,possible_moves)
         return possible_moves
     
     # Returns a list of squares that are threatened by this piece
@@ -101,7 +101,7 @@ class Knight(Piece): # can jump in L shape => 8 DOF
                     possible_moves.append(idx_to_name(new_move))
                 elif content == None:
                     possible_moves.append(idx_to_name(new_move))   
-        possible_moves = filter_possible_moves(board,self,position,possible_moves)
+        possible_moves = filter_moves_leading_to_check(board,self,position,possible_moves)
         return possible_moves
     
     def get_attacking_squares(self, board):
@@ -182,16 +182,21 @@ class Pawn(Piece): # 1.5 DOF
         diagonal_moves = []
         for i in [1,2]: # <- these correspond to the indices of the diagonals in self.moveset
             diagonal_squares = possible_moves_dict[self.moveset[i]]
-            if len(diagonal_squares) != 0:
-                diagonal_moves.append(diagonal_squares[0])
-            
+            if len(diagonal_squares) == 0: 
+                continue
+            diagonal_moves.append(diagonal_squares[0])
+        
         # Add square of each diagonal ONLY if square is occupied by enemy        
         for move in diagonal_moves:
             content = board.array[name_to_idx(move)[0]][name_to_idx(move)[1]]
             if content != None and content.colour != self.colour:
                 possible_moves_list.append(move)
+
+        # Add enpassant target square if applicable
+        if self in board.enpassant['pieces']:
+            possible_moves_list.append(board.enpassant['target_square'])
         
-        possible_moves_list = filter_possible_moves(board,self,position,possible_moves_list) 
+        possible_moves_list = filter_moves_leading_to_check(board,self,position,possible_moves_list) 
         return possible_moves_list
     
     def get_attacking_squares(self, board) -> list:
@@ -286,7 +291,7 @@ def get_squares_under_threat(board, piece_colour: str):
 
     return list(set(squares_under_threat)) #convert to set to remove duplicate values
 
-def filter_possible_moves(board,piece:Piece,origin_square_idx: str,possible_moves:list):
+def filter_moves_leading_to_check(board,piece:Piece,origin_square_idx: str,possible_moves:list):
     # Definition: Removes moves that would lead to a check. For every legal move, calculate if it could lead to a check on own king.
     
     result = []

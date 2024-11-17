@@ -1,7 +1,7 @@
 import pygame
 from src.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from src.board import Board
-from src.utilities import idx_to_name
+from src.utilities import idx_to_name, clear
 
 def main():
     
@@ -54,6 +54,7 @@ def main():
                         break
                 
                 if succesful_move:
+                    clear()
                     print(board.gamelog)
                 else: #if move is not valid then reset position of piece to origin
                     grabbed_piece.rect.center = origin_rect.center

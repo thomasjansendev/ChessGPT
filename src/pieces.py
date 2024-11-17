@@ -63,7 +63,7 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
         if position == None: # temp check until position parameter is fully utilized
             position = self.get_position(board.array)
         possible_moves = move_search(board.array, position, self, mode='-legal', format='-list')
-        squares_under_threat = get_squares_under_threat(board,self.colour)      
+        squares_under_threat = get_squares_under_threat(board)      
         legal_moves = []
         for move in possible_moves:
             if move not in squares_under_threat:
@@ -236,7 +236,7 @@ def move_search(board:list, origin: tuple, piece: Piece, mode: str='-legal', for
             
             # Skip current search position if NOT within boundaries of BOARD_REF
             if search_pos[0] < 0 or search_pos[0] >= len(board) or search_pos[1] < 0 or search_pos[1] >= len(board):
-                continue
+                break
 
             # Convert array position to square name (e.g. 'a1', 'g8')
             square = idx_to_name(search_pos)
@@ -275,21 +275,20 @@ def move_search(board:list, origin: tuple, piece: Piece, mode: str='-legal', for
     else:
         raise Exception("move_search: 'format' argument is invalid. Should either be '-dict' or '-list'")
 
-def get_squares_under_threat(board, piece_colour: str):
+def get_squares_under_threat(board):
     # Used by king to identify squares it shouldn't move to
     
-    opposite_pieces = []
-    for rank in range(0,len(board.array)):
-        for file in range(0,len(board.array[rank])):
-            piece = board.array[rank][file]
-            if piece != None and piece.colour != piece_colour:
-                opposite_pieces.append(piece)
-    
+    opposite_colour = 'w' if board.active_colour == 'b' else 'b'
     squares_under_threat = []
-    for piece in opposite_pieces:
-        squares_under_threat += piece.get_attacking_squares(board)
+    for piece in board.active_pieces[opposite_colour]:
+        if type(piece) == King or type(piece) == Pawn:
+            squares_under_threat += piece.get_attacking_squares(board)
+        else:
+            squares_under_threat += piece.get_legal_moves(board)
 
-    return list(set(squares_under_threat)) #convert to set to remove duplicate values
+    result = list(set(squares_under_threat)) #convert to set to remove duplicate values
+    
+    return result 
 
 def filter_moves_leading_to_check(board,piece:Piece,origin_square_idx: str,possible_moves:list):
     # Definition: Removes moves that would lead to a check. For every legal move, calculate if it could lead to a check on own king.
@@ -352,56 +351,61 @@ def copy_board(board_array:list) -> list:
     return board_copy
 
 def append_castling_moves(king:King,board,squares_under_threat:list,legal_moves:list) -> list:
-    queenside_squares = []
-    kingside_squares = []
-    
-    white_queenside_squares = ['a1','c1']
-    white_kingside_squares = ['g1','h1']
-    black_queenside_squares = ['a8','c8']
-    black_kingside_squares = ['g8','h8']
+    queenside_moves = []
+    kingside_moves = []
+
+    white_queenside_squares = ['a1','b1','c1','d1','e1']
+    white_kingside_squares = ['e1','f1','g1','h1']
+    black_queenside_squares = ['a8','b8','c8','d8','e8']
+    black_kingside_squares = ['e8','f8','g8','h8']
+    # 
+    # white_queenside_squares = ['a1','c1']
+    # white_kingside_squares = ['g1','h1']
+    # black_queenside_squares = ['a8','c8']
+    # black_kingside_squares = ['g8','h8']
     
     if king.colour == 'w':
         
         # Verify queenside castling for white
         if board.castling_availability['white_queenside'] == False:
             pass
-        elif white_queenside_squares in squares_under_threat:
+        elif any(square in squares_under_threat for square in white_queenside_squares):
             pass
         elif board.get_piece('b1') != None or board.get_piece('c1') != None or board.get_piece('d1') != None:
             pass
         else:
-            queenside_squares = white_queenside_squares
+            queenside_moves = [white_queenside_squares[0], white_queenside_squares[2]]
         
         # Verify kingside castling for black
         if board.castling_availability['white_kingside'] == False:
             pass
-        elif white_kingside_squares in squares_under_threat:
+        elif any(square in squares_under_threat for square in white_kingside_squares):
             pass
         elif board.get_piece('f1') != None or board.get_piece('g1') != None:
             pass
         else:
-            kingside_squares = white_kingside_squares
+            kingside_moves = [white_kingside_squares[2], white_kingside_squares[3]]
     
     elif king.colour == 'b':
         
         # Verify queenside castling for black
         if board.castling_availability['black_queenside'] == False:
             pass
-        elif black_queenside_squares in squares_under_threat:
+        elif any(square in squares_under_threat for square in black_queenside_squares):
             pass
         elif board.get_piece('b8') != None or board.get_piece('c8') != None or board.get_piece('d8') != None:
             pass
         else:
-            queenside_squares = black_queenside_squares
+            queenside_moves = [black_queenside_squares[0],black_queenside_squares[2]]
         
         # Verify kingside castling for black
         if board.castling_availability['black_kingside'] == False:
             pass
-        elif black_kingside_squares in squares_under_threat:
+        elif any(square in squares_under_threat for square in black_kingside_squares):
             pass
         elif board.get_piece('f8') != None or board.get_piece('g8') != None:
             pass
         else:
-            kingside_squares = black_kingside_squares
+            kingside_moves = [black_kingside_squares[2], black_kingside_squares[3]]
     
-    return legal_moves + queenside_squares + kingside_squares
+    return legal_moves + queenside_moves + kingside_moves

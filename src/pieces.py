@@ -64,17 +64,14 @@ class King(Piece): # can move to any adjacent square by 1 => 8 DOF
             position = self.get_position(board.array)
         possible_moves = move_search(board.array, position, self, mode='-legal', format='-list')
         squares_under_threat = get_squares_under_threat(board)      
-        legal_moves = []
-        for move in possible_moves:
-            if move not in squares_under_threat:
-                legal_moves.append(move)
+        legal_moves = filter_moves_leading_to_check(board,self,position,possible_moves)
         legal_moves = append_castling_moves(self,board,squares_under_threat,legal_moves)
         return legal_moves
         
     def get_attacking_squares(self, board) -> list:
-            position = self.get_position(board.array)
-            possible_moves = move_search(board.array, position, self, mode='-attacking', format='-list')
-            return possible_moves
+        position = self.get_position(board.array)
+        possible_moves = move_search(board.array, position, self, mode='-attacking', format='-list')
+        return possible_moves
         
 class Knight(Piece): # can jump in L shape => 8 DOF
     def __init__(self, colour: str) -> None:

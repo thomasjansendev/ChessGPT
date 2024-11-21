@@ -27,7 +27,8 @@ class Board:
         self.checkmate = False
         self.gamelog = "" # To keep track of turns in PGN format
     
-    def update(self,move:str): #TODO: add legal_moves to method signature as kwarg to avoid calculating twice
+    def update(self,move:str): 
+        move = short_to_long_algebraic(move,self)
         # Assuming move is given in UCI format 'e2e4' (long algebraic notation)
         origin_square = move[:2]
         origin_square_idx = name_to_idx(origin_square)
@@ -103,7 +104,6 @@ class Board:
     def get_piece(self,square: str) -> Piece:
         index = name_to_idx(square)
         return self.array[index[0]][index[1]]
-    
     
     def swap_active_colour(self):
         if self.active_colour == 'w':
@@ -400,3 +400,64 @@ def init_piece_sprites(board: Board):
         square = idx_to_name(piece.get_position(board.array))
         square_rect = board.sprites[square]["rect"]
         piece.rect = piece.img.get_rect(topleft=(square_rect.x, square_rect.y))
+
+def short_to_long_algebraic(short_algebraic: str, board: Board) -> str:
+    # Remove check notation ('+' or '#') to simplify parsing
+    if short_algebraic[-1] == '+' or short_algebraic[-1] == '#':
+        short_algebraic = short_algebraic[:-1]
+
+    # Kingside castling
+    if short_algebraic == '0-0':
+        long_algebraic = 'e1g1' if board.active_colour == 'w' else 'e8g8'
+        return long_algebraic
+
+   # Queenside castling 
+    if short_algebraic == '0-0-0':
+        long_algebraic = 'e1c1' if board.active_colour == 'w' else 'e8c8'
+        return long_algebraic
+    
+    destination_square = short_algebraic[-2:]
+    destination_square_idx = name_to_idx(destination_square)
+
+    # Pawn move (e.g. 'e2', 'd6')
+    if len(short_algebraic) == 2:
+        # For a normal pawn move we only need to check the same colomn/file
+        direction_rank = 1 if board.active_colour == 'w' else -1 #used to iterate through the same column in the right direction (up/down)
+        for i in range(1,3):
+            origin_square_idx = (destination_square_idx[0]+i*direction_rank, destination_square_idx[1])
+            content = board.array[origin_square_idx[0]][origin_square_idx[1]]
+            if type(content) == Pawn and destination_square in content.get_legal_moves(board):
+                return idx_to_name(origin_square_idx) + destination_square
+
+    # Pawn capture (e.g. 'cxd4', 'exd4')
+    if len(short_algebraic) == 4 and short_algebraic[0].islower():
+        direction_rank = 1 if board.active_colour == 'w' else -1
+        origin_file = short_algebraic[0]
+        direction_file = 1 if origin_file > destination_square[0] else -1
+        origin_square_idx = (destination_square_idx[0]+direction_rank, destination_square_idx[1]+direction_file)
+        return idx_to_name(origin_square_idx) + destination_square
+
+    # Piece move or capture (e.g. 'Bf5', 'Qc2', 'Bxc2', 'Nxc2')
+    if short_algebraic[0].isupper():
+        piece_id = short_algebraic[0]
+        for piece in board.active_pieces[board.active_colour]:
+            if piece.id.upper() != piece_id:
+                continue
+            if destination_square in piece.get_legal_moves(board):
+                origin_square = idx_to_name(piece.get_position(board.array))
+                return origin_square + destination_square
+    #TODO: implement checks for when two pieces could do the move (for rooks and knights)        
+
+    raise Exception('Error: invalid move')
+        
+    '''
+    castling = 0-0 or 0-0-0
+    pawn move = e3, d6
+    pawn capture = cxd4, exd4
+    piece move = Bf5, Qc2
+    piece capture = Bxc2 (taking a queen), Nxc2 (taking a bishop)
+    check = Bb5+, Qxb5+
+    checkmate = Qxb5#
+    '''
+    
+    

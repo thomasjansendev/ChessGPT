@@ -1,5 +1,4 @@
 from openai import OpenAI
-from src.constants import RANKS, FILES
 
 # Initialize OpenAI client
 
@@ -14,11 +13,8 @@ client = OpenAI(
     api_key=api_key,
 )
 
-# model = "gpt-3.5-turbo-instruct"
-# model = "gpt-3.5-turbo"
-model = "gpt-4o"
 
-# Initialize system prompt -> used to parametrize the output from the model
+# Initialize system prompt -> used to provide instructions to LLM
 with open("./src/llm/sys_prompt.txt", "r", encoding="utf-8") as file:
     system_prompt_content = file.read()
 
@@ -31,7 +27,7 @@ user_prompt = {"role": "user", "content": ""}
 assistant_prompt = {"role": "user", "content": ""}
 
 
-def get_llm_move(prompt, model=model):
+def get_llm_move(prompt, model="gpt-4o"):
     chat_completion = client.chat.completions.create(
         messages=prompt,
         model=model,
